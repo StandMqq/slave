@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>广告详情</title>
+<meta name="renderer" content="webkit">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+<script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+<link rel="stylesheet" href="../css/font.css">
+<link rel="stylesheet" href="../css/xadmin.css">
+<script type="text/javascript" src="../js/xadmin.js"></script>
+<script src="../lib/layui/layui.js" charset="utf-8"></script>
+<script src="../js/config/config.js"></script>
+<script type="text/javascript" src="../js/jquery.shCircleLoader.js"></script>
+<style>
+	/*.row-cell-class {
+		padding-top: 50px,
+	}*/
+	
+	#loding {
+		background-color: #BEBEBE;
+		position: fixed;
+		left: 0px;
+		top: 0px;
+		right:0px;
+		bottom:0px;
+	}
+</style>
+
+<!-- 经纬度拾取器 start -->
+<!-- <script type="text/javascript" src="http://webapi.amap.com/maps?v=1.3&key=YOUKEY"></script> -->
+<script type="text/javascript" src="https://webapi.amap.com/maps?v=1.3&key=1987fd366e54f5370fbe29b04ef07fb2"></script>
+<script type="text/javascript" src="https://cache.amap.com/lbs/static/addToolbar.js"></script>
+<style>
+#iMap {
+	height: 500px;
+	width: 600px;
+	float: left;
+}
+
+.info {
+	float: left;
+	margin: 0 0 0 10px;
+}
+
+label {
+	width: 80px;
+	float: left;
+}
+
+.detail {
+	padding: 10px;
+	border: 1px solid #aaccaa;
+}
+</style>
+<!-- 经纬度拾取器 end -->
+</head>
+
+<body onload="mapInit()">
+	<div class="x-nav">
+		<span class="layui-breadcrumb">
+			<a href="main">首页</a>
+			<a id="advertisementId">广告列表</a>
+			<a href="#">
+				<cite>广告详情</cite>
+			</a>
+		</span>
+		<a class="layui-btn layui-btn-small"
+			style="line-height: 1.6em; margin-top: 3px; float: right"
+			href="javascript:location.replace(location.href);" title="刷新">
+			<i class="layui-icon" style="line-height: 30px">ဂ</i>
+		</a>
+	</div>
+	<div class="x-body">
+		<div class="layui-form-item">
+			<label class="layui-form-label">广告类型</label>
+			<div class="layui-input-block">
+				<input type="text" id="adverType" readonly="readonly"
+					autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">广告主姓名</label>
+			<div class="layui-input-block">
+				<input type="text" id="adverName" readonly="readonly"
+					autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">广告主电话</label>
+			<div class="layui-input-block">
+				<input type="text" id="adverPhone" readonly="readonly"
+					autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">创建时间</label>
+			<div class="layui-input-block">
+				<input type="text" id="creatTime" readonly="readonly"
+					autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">标题</label>
+			<div class="layui-input-block">
+				<input type="text" id="title" readonly="readonly" autocomplete="off"
+					class="layui-input">
+			</div>
+		</div>
+		<div id="block_title" class="layui-form-item">
+			<label class="layui-form-label">标题图片</label>
+			<div class="layui-input-block">
+				<img id="titleImage" height="400px" width="400px" />
+			</div>
+		</div>
+		<div id="map_red_package" class="layui-form-item">
+			<label class="layui-form-label">商家logo商家图片</label>
+			<div class="layui-input-block">
+				<img id="iconImage" height="100px" width="100px" />
+			</div>
+		</div>
+		<div id="map_red_package1" class="layui-form-item">
+			<label class="layui-form-label">广告图</label>
+			<div class="layui-input-block">
+				<img id="advertisementImage" height="400px" width="400px" />
+			</div>
+		</div>
+		<!--  <div class="layui-btn layui-btn-warm">
+        <input class="layui-btn layui-btn-warm"
+         id="addMarker" type="button" 
+          onclick="addMarker()" value="点击显示商家坐标">
+   		 </div> -->
+		<div id="shopAdress" class="layui-form-item">
+			<div class="layui-form-item image2-class" id="iMap"
+			style="width: 90%; margin-left: 110px;">
+			</div>
+		</div>
+		
+		<div class="layui-form-item" id = "remark">
+			<label class="layui-form-label">内容</label>
+			<div class="layui-input-block">
+				<input type="text" id="content" readonly="readonly"
+					autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div id="block_content1" class="layui-form-item">
+			<label class="layui-form-label">内容图片1</label>
+			<div class="layui-input-block">
+				<img id="contentImage1" height="400px" width="500px" />
+			</div>
+		</div>
+		<div id="block_content2" class="layui-form-item">
+			<label class="layui-form-label">内容图片2</label>
+			<div class="layui-input-block">
+				<img id="contentImage2" height="400px" width="500px" />
+			</div>
+		</div>
+		<div id="block_content3" class="layui-form-item">
+			<label class="layui-form-label">内容图片3</label>
+			<div class="layui-input-block">
+				<img id="contentImage3" height="400px" width="500px" />
+			</div>
+		</div>
+
+		<table id="wait" class="layui-table">
+			<tbody>
+				<tr>
+					<th>备注</th>
+					<td><select id="reason" onchange="customize()"></select></td>
+					<td><textarea id="remark" 
+							placeholder="审核描述" class="layui-textarea"></textarea></td>
+				</tr>
+				<tr>
+					<th></th>
+					<th>
+						<button class="layui-btn" onclick="pass('通过')"><!--onclick="location='192.168.0.95'"-->
+							<i class="layui-icon"></i>通过
+						</button>
+					</th>
+					<td>
+						<button class="layui-btn layui-btn-danger" onclick="reject('拒绝')">
+							<i class="layui-icon"></i>拒绝
+						</button>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<table id="pass" class="layui-table">
+			<tbody>
+				<tr>
+					<th>备注</th>
+					<td><select id="reason" onchange="customize()"></select></td>
+					<td><textarea id="remark" readonly="readonly"
+							placeholder="取消资质描述" class="layui-textarea"></textarea></td>
+				</tr>
+				<tr>
+					<th></th>
+					<th></th>
+					<td>
+						<button class="layui-btn layui-btn-danger"
+							onclick="reject('取消资质')">
+							<i class="layui-icon"></i>取消资质
+						</button>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<table id="not" class="layui-table">
+			<tbody>
+				<tr>
+					<th></th>
+					<th></th>
+					<td>
+						<button class="layui-btn" onclick="pass('通过')">
+							<i class="layui-icon"></i>通过
+						</button>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<div id="loding" hidden></div>
+	</div>
+	<script>
+	
+		$('#loding').shCircleLoader({
+			color : "#80FFFF"
+		});
+		
+		var queryData = sessionStorage.getItem("queryData");
+		if (queryData != null) {
+			$("#advertisementId").attr("href", queryData);
+		}
+
+		var index = 1;
+		var size = 1;
+		var total = 0;
+		var token = getCookie('token');
+		var curWwwPath = window.document.location.href;
+		var idParam = curWwwPath.split("?")[1];
+		var id = idParam.split("=")[1];
+		var lng;
+		var lat;
+		var files = [];
+		var upToken;
+		var firstKey;
+		var secondKey;
+		var threeKey;
+		var proccessStatus = 0;
+		var oldPictures = [];
+		var updateStatus = false;
+		var curWwwPath = window.document.location.href;
+		var idParam = curWwwPath.split("?")[1];
+		var id;
+		if(idParam != "" && idParam != null){
+			id = idParam.split("=")[1];
+		}
+		if(id != null && id != ''){
+			updateStatus = true;
+		}
+		var submitStatus = 0;
+		// 获取数据
+		var lng;
+		var lat;
+		
+		function getData() {
+			$.ajax({
+				headers : {
+					"token" : token
+				},
+				dataType : 'JSON',
+				url : api + 'advertisement/getAdvertisementById',
+				type : 'post',
+				data : {
+					id : id,
+					version : version,
+				},
+				success : function(res) {
+					if (res.success == true) {
+						if (res.data == null) {
+							layer.open({
+								content : res.message,
+								time : 3000,
+								title : '提示',
+								anim : 1,
+								skin : 'demo-class'
+							});
+						} else {
+							var data = res.data.view
+							if (data.status == 0) { //审核中
+								$('#not').remove();
+								$('#pass').remove();
+							} else if (data.status == 1) { //通过
+								$('#not').remove();
+								$('#wait').remove();
+							} else if (data.status == 2) { //未通过
+								$('#pass').remove();
+								$('#wait').remove();
+							} else if (data.status == 3
+									|| data.status == 4) { //发布中的或者已发布完成的广告不允许编辑
+								$('#pass').remove();
+								$('#wait').remove();
+								$('#not').remove();
+							}
+							if(data.advertisementType == '007'){
+								$('#block_title').remove();
+								$('#layui-form-item').remove();	
+								$('#block_content1').remove();
+								$('#block_content2').remove();
+								$('#block_content3').remove();
+								// 标点
+								lng = data.lng;
+								lat = data.lat;
+								addMark(data.lng,data.lat);
+								$('#remark').remove();
+							}else{
+								$('#map_red_package').remove();
+								$('#map_red_package1').remove();
+								$('#iMap').remove();
+							}
+
+							if (data.title == null
+									|| data.title == 'null') {
+								data.title = '';
+							}
+							if (data.content == null
+									|| data.content == 'null') {
+								data.content = '';
+							}
+							if (data.advertiserName == null
+									|| data.advertiserName == 'null') {
+								data.advertiserName = '';
+							}
+
+							$("#adverType").val(
+									data.advertisementTypeName);
+							$("#adverName").val(data.advertiserName);
+							$("#adverPhone").val(data.advertiserPhone);
+							$("#creatTime").val(data.createTime);
+							$("#title").val(data.title);
+							$("#content").val(data.content);
+							$("#lng").val(data.lng);
+							$("#lat").val(data.lat);
+							//$("#content").val(data);
+							//商家logo地址
+							var iconImage = data.iconImgUrl;
+							if (iconImage == null || iconImage == "") {
+								$("#map_red_package").hide();
+							} else {
+								$("#iconImage").attr("src", iconImage)
+							}
+							var titleImage = data.titleImgUrl;
+							if (titleImage == null || titleImage == "") {
+								$("#block_title").hide();
+							} else {
+								$("#titleImage").attr("src", titleImage)
+							}
+							var countImage = data.contentImages;
+							if (countImage == null || countImage == "") {
+								$("#block_content1").hide();
+								$("#block_content2").hide();
+								$("#block_content3").hide();
+								$("#map_red_package1").hide();
+							} else {
+								var images = countImage.split(",")
+								console.log(images);
+								console.log(images.length);
+								console.log(images[0]);
+								console.log(images[1]);
+								console.log(images[2]);
+								if (images.length == 1) {
+									$("#block_content2").hide();
+									$("#block_content3").hide();
+									$("#contentImage1").attr("src",
+											images[0]);
+									$("#advertisementImage").attr("src",
+											images[0]);
+								}
+								if (images.length == 2) {
+									$("#block_content3").hide();
+									$("#contentImage1").attr("src",
+											images[0]);
+									$("#contentImage2").attr("src",
+											images[1]);
+								}
+								if (images.length == 3) {
+									$("#contentImage1").attr("src",
+											images[0]);
+									$("#contentImage2").attr("src",
+											images[1]);
+									$("#contentImage3").attr("src",
+											images[2]);
+								}
+							}
+
+							var reasonList = res.data.dataDictionaryList
+							var reason = ''
+							for (var i = 0; i < reasonList.length; i++) {
+								reason += "<option value='"+reasonList[i].value+"'>"
+										+ reasonList[i].value
+										+ "</option>"
+							}
+							reason += "<option value='customize'>自定义......</option>"
+							$('#reason').html(reason);
+						}
+					} else {
+						layer.open({
+							content : res.message,
+							time : 3000,
+							title : '提示',
+							anim : 1,
+							skin : 'demo-class'
+						});
+						if (res.code == 403) {
+							window.location.href = api + "page/403";
+						}
+						if (res.code == 504) {
+							top.location.href = api + "page/login";
+						}
+					}
+
+				},
+				error : function() {
+
+				},
+
+			})
+		}
+		// 获取数据
+		getData();
+		// 通过提交数据
+		function submitData(id, status, title) {
+			var reason = $("#reason").val();
+			var remark = $('#remark').val();
+			if (reason == 'customize') {
+				reason = remark
+			}
+			layer.confirm('确认' + title + '？', function(index) {
+				$('#loding').show();
+				layer.close(index);
+				$.ajax({
+					headers : {
+						"token" : token
+					},
+					dataType : 'JSON',
+					url : api + 'advertisement/advertisementStatusExamine',
+					type : 'post',
+					data : {
+						id : id,
+						version : version,
+						reason : reason,
+						status : status
+					},
+					success : function(res) {
+						$('#loding').hide();
+						if (res.success == true) {
+							layer.open({
+								content : res.message,
+								time : 3000,
+								title : '提示',
+								anim : 1,
+								skin : 'demo-class'
+							});
+							//设置操作成功弹框时间
+							setTimeout(function() {
+								window.history.go(-1);
+							}, 2000)
+							/* window.location.href = api
+									+ "page/advertisementList" */
+						} else {
+							layer.open({
+								content : res.message,
+								time : 3000,
+								title : '提示',
+								anim : 1,
+								skin : 'demo-class'
+							});
+							if (res.code == 403) {
+								window.location.href = api + "page/403";
+							}
+							if (res.code == 504) {
+								top.location.href = api + "page/login";
+							}
+						}
+					},
+					error : function() {
+						$('#loding').hide();
+						layer.msg('网络错误', {
+							icon : 5,
+							time : 1500
+						});
+					},
+				})
+			});
+		}
+		//通过
+		function pass(title) {
+			submitData(id, 1, title);
+		}
+		//拒绝
+		function reject(title) {
+			var reason = $("#reason").val();
+			var remark = $('#remark').val();
+			if (reason == 'customize') {
+				if (remark == null || remark == "") {
+					layer.msg('拒绝选择自定义时，' + title + '描述不能为空', {
+						icon : 5,
+						time : 1000
+					});
+					return false;
+				}
+				if (remark != null && remark != '') {
+					if (remark.length > 40) {
+						layer.msg(title + '描述不超过40字!', {
+							icon : 5,
+							time : 1000
+						});
+						return false;
+					}
+				}
+			}
+			submitData(id, 2, title);
+		}
+
+		function getCookie(cname) {
+			var name = cname + "=";
+			var ca = document.cookie.split(';');
+			for (var i = 0; i < ca.length; i++) {
+				var c = ca[i].trim();
+				if (c.indexOf(name) == 0)
+					return c.substring(name.length, c.length);
+			}
+			return "";
+		}
+
+		function customize() {
+			var reason = $("#reason").val();
+			if (reason == 'customize') {
+				$("#remark").removeAttr("readonly");
+			} else {
+				$("#remark").val('');
+				$("#remark").attr('readonly', 'readonly');
+			}
+		}
+
+	</script>
+
+	<!-- 经纬度拾取器 start -->
+	<script>
+        var mapObj;
+        var lnglatXY;
+        var marker;
+        //初始化地图
+       
+        var opt = {
+            level: 10, //设置地图缩放级别
+            center: new AMap.LngLat(104.044412,30.571591) //设置地图中心点
+        }
+        mapObj = new AMap.Map("iMap", opt);
+        function addMark(lng,lat) {
+        	 marker = new AMap.Marker({
+                 map: mapObj,
+                 icon: "https://a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-default.png",
+                 position: [lng,lat],
+                 //offset: new AMap.Pixel(-5, -30)
+             });
+        }
+        //回调函数
+        function geocoder_CallBack(data) {
+            var address;
+            //返回地址描述
+            address = data.regeocode.formattedAddress;
+            //返回结果拼接输出
+            /* document.getElementById("iAddress").innerHTML = address; */
+        }
+        //鼠标点击，获取经纬度坐标
+        function getLnglat(e) {
+            mapObj.clearMap();
+            var x = e.lnglat.getLng();
+            var y = e.lnglat.getLat();
+            /* document.getElementById("lnglat").innerHTML = x + "," + y; */
+            lnglatXY = new AMap.LngLat(x, y);
+            /* $("#position").val(x + "," + y); */
+            $("#lng").val(x);
+            $("#lat").val(y);
+            geocoder();
+        }
+     	
+        
+    </script>
+	<!-- 经纬度拾取器 end -->
+	<!-- 经纬度设置点 start -->
+	<script  type="text/javascript">
+   
+    
+	</script>
+	
+</body>
+
+</html>

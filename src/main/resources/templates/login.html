@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>后台登录-车而告之</title>
+    <meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+	<link rel="stylesheet" href="../css/font.css">
+	<link rel="stylesheet" href="../css/xadmin.css">
+	<link rel="stylesheet" href="../lib/layui/css/layui.css">
+	<script type="text/javascript" src="../js/jquery-3.2.1.min.js"></script>
+	<script type="text/javascript" src="../lib/layui/layui.js" charset="utf-8"></script>
+	<script type="text/javascript" src="../js/xadmin.js"></script>
+	<script type="text/javascript" src="../js/config/config.js"></script>
+
+	<style>
+		.msg-box {
+			display: none;
+			text-align: center;
+			position: fixed;
+			left: 35%;
+			top: 300px;
+			width: 30%;
+			background: rgba(0, 0, 0, 0.6);
+			font-size: 15px;
+			z-index: 1001;
+			color: #fff;
+			line-height: 22px;
+			padding: 10px 0
+		}
+	</style>
+</head>
+<body class="login-bg" onkeydown="keyLogin();">
+
+	<div class="login layui-anim layui-anim-up">
+		<div class="message">车而告之-管理登录</div>
+		<div id="darkbannerwrap"></div>
+		<input name="username" placeholder="用户名" type="text"
+			lay-verify="required" class="layui-input" id="username">
+		<hr class="hr15">
+		<input name="password" lay-verify="required" placeholder="密码"
+			type="password" class="layui-input" id="password">
+		<hr class="hr15">
+		<input value="登录" lay-submit lay-filter="login" style="width: 100%;"
+			type="submit" onclick="submitGet()">
+		<hr class="hr20">
+	</div>
+	
+    <div class="msg-box">
+        <p id="msg">msg</p>
+    </div>
+
+	<script>
+		function keyLogin() {
+			if (event.keyCode == 13) //回车键的键值为13
+				submitGet(); //调用登录按钮的登录事件
+		}
+
+		function submitGet() {
+			var username = $('#username').val();
+			var password = $('#password').val();
+			if (username == "" || username == null) {
+				$('.msg-box').show();
+				$('#msg').html("用户名不能为空");
+				setTimeout(function(){
+					$('.msg-box').hide();
+				},1500)
+				return;
+			}
+			if (username == "" || username == null) {
+				$('.bg,.msg-box').show();
+				$('#msg').html("密码不能为空");
+				setTimeout(function(){
+					$('.msg-box').hide();
+				},1500)
+				return;
+			}
+			$.ajax({
+				dataType : 'JSON',
+				url : api + 'user/login',
+				type : 'post',
+				data : {
+					version : version,
+					userName : username,
+					password : password,
+				},
+				success : function(res) {
+					if (res.success == true) {
+						document.cookie = "token=" + res.data.token;
+						sessionStorage.setItem("adminId", res.data.id);
+						sessionStorage.setItem("adminName", res.data.name);
+						sessionStorage.setItem("accountStatus", res.data.status);
+						sessionStorage.setItem("resultResource", res.data.resultResource);
+						location.href = api + 'page/index';
+					} else {
+						$('.bg,.msg-box').show();
+						$('#msg').html(res.message);
+						setTimeout(function(){
+							$('.msg-box').hide();
+						},1500)
+					}
+				},
+				error : function() {
+					layer.msg('网络错误', {
+						icon : 5,
+						time : 1500
+					});
+				},
+			})
+		}
+	</script>
+</body>
+</html>

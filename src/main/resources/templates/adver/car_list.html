@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>车辆列表</title>
+    <meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+	<link rel="stylesheet" href="../css/font.css">
+	<link rel="stylesheet" href="../css/xadmin.css">
+	<script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+	<script type="text/javascript" src="../lib/layui/layui.js" charset="utf-8"></script>
+	<script type="text/javascript" src="../js/xadmin.js"></script>
+	<script type="text/javascript" src="../js/config/config.js"></script>
+</head>
+
+<body>
+	<div class="x-nav">
+		<span class="layui-breadcrumb"> <a href="main">首页</a> <a
+			href="carList">车辆列表</a>
+		</span> <a class="layui-btn layui-btn-small"
+			style="line-height: 1.6em; margin-top: 3px; float: right"
+			href="javascript:location.replace(location.href);" title="刷新"> <i
+			class="layui-icon" style="line-height: 30px">ဂ</i></a>
+	</div>
+	<div class="x-body">
+
+		<ul class="layui-tab-title">
+			<li class="layui-this" onclick=selectMenu(0)>待审核</li>
+			<li onclick=selectMenu(1)>已通过</li>
+			<li onclick=selectMenu(2)>未通过</li>
+		</ul>
+
+		<span class="x-right" style="line-height: 40px">共有数据：<span id="num"></span> 条</span>
+		<table class="layui-table">
+			<thead>
+				<tr>
+					<th>车主</th>
+					<th>车牌号</th>
+					<th>时间</th>
+					<th>操作</th>
+			</thead>
+			<tbody id="listBox">
+
+			</tbody>
+		</table>
+		<div class="page" id="page"></div>
+	</div>
+	<script>
+    var ck = getCookie('token');
+    var curPage=1
+    var pageSize=10
+    var status=0
+
+    var laypage;
+    layui.use('laypage', function(){
+        laypage = layui.laypage;
+        //执行一个laypage实例
+    });
+    getData(curPage)
+    function getData(curPage){
+    $.ajax({
+    	headers:{
+		 	"token": ck
+		},
+        dataType:'JSON',
+        url:api+'car/getCarList',
+        type:'post',
+        data:{
+            version:version,
+			index:curPage,
+			size:pageSize,
+			status:status,
+            },
+        success: function (res) {
+			if(res.success==true){
+				if(res.data==null){
+					$('#listBox').html("");
+					$('#num').html(0);
+					laypage.render({
+	                    elem: 'page', //注意，这里的 test1 是 ID，不用加 # 号
+	                    count: 0, //数据总数，从服务端得到
+	                });
+					layer.msg(res.message);
+				}else{
+					var data=res.data.list
+	                var list=''
+					for(var i =0;i<data.length;i++){
+	                          list+=
+	                        	  "<tr>"+
+	                        	  "<td>"+data[i].carOwner+"</td>"+
+	                        	  "<td>"+data[i].carNumber+"</td>"+
+	                        	  "<td>"+data[i].time+"</td>"+
+	                        	  "<td><button class='layui-btn' onclick='infoGo("+data[i].id+")'>详情</button></td>"+
+	                        	  "</tr>"
+					}
+	                $('#listBox').html(list);
+					$('#num').html(res.data.total);
+
+	                laypage.render({
+	                    elem: 'page', //注意，这里的 test1 是 ID，不用加 # 号
+	                    count: res.data.total, //数据总数，从服务端得到
+	                    limit: pageSize,
+	                    curr:curPage,
+	                    jump: function(obj, first) {
+	                        if (!first) {
+	                            getData(obj.curr);
+	                        }
+	                    }
+	                });
+				}
+			}else{
+				layer.open({
+               		  content: res.message,
+               		  time: 3000,
+               		  title:'提示',
+               		  anim:1,
+               		  skin:'demo-class'
+               	});
+				if(res.code == 403){
+					window.location.href = api + "page/403";
+				}
+				if(res.code == 504){
+					top.location.href = api + "page/login";
+				}
+			}
+        },
+        error: function () {
+        },
+    })
+    }
+
+    function selectMenu(menu){
+    	curPage=1
+    	status=menu
+    	getData(curPage)
+    }
+    
+    function infoGo(id){
+        if(id){
+            location.href=api+'page/carDetail?id='+id
+        }
+    }
+
+    function getCookie(cname)
+    {
+        var name = cname + "=";
+        var ca = document.cookie.split(';');
+        for(var i=0; i<ca.length; i++)
+        {
+            var c = ca[i].trim();
+            if (c.indexOf(name)==0) return c.substring(name.length,c.length);
+        }
+        return "";
+    }
+    </script>
+</body>
+
+</html>

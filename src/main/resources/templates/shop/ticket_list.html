@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>券列表</title>
+    <meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+	<link rel="stylesheet" href="../css/font.css">
+	<link rel="stylesheet" href="../css/xadmin.css">
+	<script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+	<script type="text/javascript" src="../lib/layui/layui.js" charset="utf-8"></script>
+	<script type="text/javascript" src="../js/xadmin.js"></script>
+	<script type="text/javascript" src="../js/config/config.js"></script>
+</head>
+
+<body>
+	<div class="x-nav">
+		<span class="layui-breadcrumb"> <a href="main">首页</a> <a
+			href="businessList">商户列表</a> <a href="#">券列表</a>
+		</span> <a class="layui-btn layui-btn-small"
+			style="line-height: 1.6em; margin-top: 3px; float: right"
+			href="javascript:location.replace(location.href);" title="刷新"> <i
+			class="layui-icon" style="line-height: 30px">ဂ</i></a>
+	</div>
+	<div class="x-body">
+
+		<span class="x-right" style="line-height: 40px">共有数据：<span
+			id="num"></span> 条
+		</span>
+		<table class="layui-table">
+			<colgroup>
+				<col width="5%">
+				<col width="20%">
+				<col width="20%">
+				<col width="5%">
+				<col width="50%">
+			</colgroup>
+			<tbody>
+				<tr>
+					<td><button class="layui-btn" id="queryBtn">查&nbsp;询</button></td>
+					<td><input type="text" id="nameInput" placeholder="请输入名称"
+						autocomplete="off" class="layui-input"></td>
+					<!-- 劵类型 -->
+					<td><select id="ticketTypeId" class="layui-input">
+					</select></td>
+					<td>
+						<button id="addTicket" class="layui-btn">
+							<i class="iconfont">&#xe6b9;</i>添加
+						</button>
+					</td>
+					<td></td>
+				</tr>
+			</tbody>
+		</table>
+		<table class="layui-table">
+			<thead>
+				<tr>
+					<th>优惠券名称</th>
+					<th>优惠券类型</th>
+					<th>编号</th>
+					<!-- <th>总数量</th> -->
+					<th>剩余数量</th>
+					<th>领取数量</th>
+					<th>状态</th>
+					<th>有效期</th>
+					<th>创建时间</th>
+					<th>操作</th>
+			</thead>
+			<tbody id="listBox">
+
+			</tbody>
+		</table>
+		<div class="page" id="page"></div>
+	</div>
+</body>
+<script>
+	var ck = getCookie('token');
+	var curPage = 1;
+	var pageSize = 10;
+	var name;
+	var ticketTypeId;
+
+	var curWwwPath = window.document.location.href;
+	var idParam = curWwwPath.split("?")[1];
+	var businessId;
+	if (idParam != "" && idParam != null) {
+		businessId = idParam.split("=")[1];
+	}
+
+	var laypage;
+	layui.use('laypage', function() {
+		laypage = layui.laypage;
+
+		//执行一个laypage实例
+
+	});
+	getData(curPage)
+	function getData(curPage) {
+		name = $("#nameInput").val();
+		ticketTypeId = $("#ticketTypeId").val();
+		$.ajax({
+			headers : {
+				"token" : ck
+			},
+			dataType : 'JSON',
+			url : api + 'ticket/getTicketList',
+			type : 'post',
+			data : {
+				version : version,
+				curPage : curPage,
+				pageSize : pageSize,
+				businessId : businessId,
+				name : name,
+				ticketTypeId : ticketTypeId
+			},
+			success : function(res) {
+				if (res.success == true) {
+					if (res.data == null) {
+						$('#listBox').html("");
+						$('#num').html(0);
+						layer.msg(res.message);
+					} else {
+						var data = res.data.resultList
+						var list = ''
+						for (var i = 0; i < data.length; i++) {
+							var editBtn;
+							if (data[i].name == null) {
+								data[i].name = '';
+							}
+							if (data[i].isDeleted == 0) {
+								data[i].isDeleted = '上架';
+								editBtn = "<td><button class='layui-btn' onclick='down("
+										+ data[i].id
+										+ ")'><i class='iconfont'>&#xe714;</i>下架</button></td>";
+							} else {
+								data[i].isDeleted = '下架';
+								editBtn = "<td><button class='layui-btn' onclick='edit("
+										+ data[i].id
+										+ ")'><i class='iconfont'>&#xe69e;</i>修改</button></td>";
+							}
+							list += "<tr>" + "<td>"
+									+ data[i].name
+									+ "</td>"
+									+ "<td>"
+									+ data[i].typeName
+									+ "</td>"
+									+ "<td>"
+									+ data[i].ticketNo
+									+ "</td>"
+									+
+									/* "<td>"+data[i].total+"</td>"+ */
+									"<td>"
+									+ (data[i].total - data[i].gainCount)
+									+ "</td>" + "<td>"
+									+ data[i].gainCount + "</td>"
+									+ "<td>" + data[i].isDeleted
+									+ "</td>" + "<td>"
+									+ data[i].startTime + " ~ "
+									+ data[i].endTime + "</td>"
+									+ "<td>" + data[i].createTime
+									+ "</td>" + editBtn + "</tr>"
+						}
+						$('#listBox').html(list);
+						$('#num').html(res.data.totalCount);
+						businessId = res.data.businessId;
+
+						/* 劵类型下拉列表 */
+						var ticketTypeList = res.data.ticketTypeList;
+						if (ticketTypeList != null
+								&& ticketTypeList != '') {
+							$("#ticketTypeId").find("option").remove();
+							$("#ticketTypeId").append(
+									"<option value=''>全部</option>"); //为Select追加一个Option(下拉项)
+							for (var i = 0; i < ticketTypeList.length; i++) {
+								$("#ticketTypeId")
+										.append(
+												"<option value='"+ticketTypeList[i].id+"'>"
+														+ ticketTypeList[i].name
+														+ "</option>");
+							}
+						}
+
+						laypage.render({
+							elem : 'page', //注意，这里的 test1 是 ID，不用加 # 号
+							count : res.data.totalCount, //数据总数，从服务端得到
+							limit : pageSize,
+							curr : curPage,
+							jump : function(obj, first) {
+								if (!first) {
+									getData(obj.curr);
+								}
+							}
+						});
+					}
+				} else {
+					layer.open({
+						content : res.message,
+						time : 3000,
+						title : '提示',
+						anim : 1,
+						skin : 'demo-class'
+					});
+					if(res.code == 403){
+						window.location.href = api + "page/403";
+					}
+					if (res.code == 504) {
+						top.location.href = api + "page/login";
+					}
+				}
+			},
+			error : function() {
+				layer.msg('网络错误', {
+					icon : 5,
+					time : 1500
+				});
+			},
+		})
+	}
+
+	function edit(id) {
+		if (id) {
+			location.href = api + 'page/insertTicket?id=' + id;
+			sessionStorage.setItem("businessId", businessId);
+		}
+	}
+
+	function down(id) {
+		if (id) {
+			layer.confirm('确认下架？', function(index) {
+				$.ajax({
+					headers : {
+						"token" : ck
+					},
+					dataType : 'JSON',
+					url : api + 'ticket/downTicket',
+					type : 'post',
+					data : {
+						version : version,
+						id : id
+					},
+					success : function(res) {
+						layer.msg(res.message, {
+							icon : 1,
+							time : 1000
+						});
+						if (res.success == true) {
+							setTimeout(function() {
+								window.history.go(0);
+							}, 2000)
+						} else {
+							layer.open({
+								content : res.message,
+								time : 3000,
+								title : '提示',
+								anim : 1,
+								skin : 'demo-class'
+							});
+							if (res.code == 504) {
+								top.location.href = api + "page/login";
+							}
+						}
+					},
+					error : function() {
+						layer.msg('网络错误', {
+							icon : 5,
+							time : 1500
+						});
+					},
+				})
+			});
+		} else {
+			layer.open({
+				content : res.message,
+				time : 0,
+				title : '未获取到主键',
+				anim : 1,
+				skin : 'demo-class'
+			});
+		}
+	}
+
+	function getCookie(cname) {
+		var name = cname + "=";
+		var ca = document.cookie.split(';');
+		for (var i = 0; i < ca.length; i++) {
+			var c = ca[i].trim();
+			if (c.indexOf(name) == 0)
+				return c.substring(name.length, c.length);
+		}
+		return "";
+	}
+
+	$("#queryBtn").click(function() {
+		getData(curPage);
+	})
+
+	$("#addTicket").click(function() {
+		location.href = api + "page/insertTicket";
+		sessionStorage.setItem("businessId", businessId);
+	})
+</script>
+
+</html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<title>钱包信息</title>
+<meta name="renderer" content="webkit">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+<link rel="stylesheet" href="../css/font.css">
+<link rel="stylesheet" href="../css/xadmin.css">
+<script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+<script type="text/javascript" src="../lib/layui/layui.js" charset="utf-8"></script>
+<script type="text/javascript" src="../js/xadmin.js"></script>
+<script type="text/javascript" src="../js/config/config.js"></script>
+<!-- 时间组件 -->
+<script>
+	layui.use('laydate', function() {
+		var laydate = layui.laydate;
+		//执行一个laydate实例
+		laydate.render({
+			elem : '#startTime', //指定元素
+			type : 'datetime'
+		});
+		laydate.render({
+			elem : '#endTime', //指定元素
+			type : 'datetime'
+		});
+	});
+</script>
+</head>
+
+<body>
+	<div class="x-nav">
+		<span class="layui-breadcrumb">
+			<a href="main">首页</a>
+			<a href="wallets">
+				<cite>钱包列表</cite>
+			</a>
+		</span>
+		<a class="layui-btn layui-btn-small" style="line-height: 1.6em; margin-top: 3px; float: right"
+			href="javascript:location.replace(location.href);" title="刷新">
+			<i class="layui-icon" style="line-height: 30px">ဂ</i>
+		</a>
+	</div>
+	<div class="x-body">
+		<span id="top" class="x-right" style="line-height: 40px">共有数据：0 条</span>
+		<table class="layui-table">
+			<colgroup>
+				<col width="5%">
+				<col width="20%">
+				<col width="40%">
+				<col width="5%">
+				<col width="30%">
+			</colgroup>
+			<tbody>
+				<tr>
+					<td>
+						<button class="layui-btn" id="queryBtn">查&nbsp;询</button>
+					</td>
+					<td>
+						<input type="text" id="phone" placeholder="请输入账号" autocomplete="off" class="layui-input"/>
+					</td>
+					<td style="display: flex;"><label class="layui-form-label" style="width: 90px;">上次充值时间</label>
+						<div class="layui-input-block" style="margin-left: 30px;">
+							<input type="text" id="startTime" name="startTime" placeholder="开始时间" autocomplete="off" class="layui-input"/>
+						</div>
+						<div class="layui-input-block" style="margin-left: 30px;">
+							<input type="text" id="endTime" name="endTime" placeholder="结束时间" autocomplete="off" class="layui-input"/>
+						</div>
+					</td>
+					<td><button class="layui-btn" id="exportBtn">导&nbsp;出</button></td>
+					<td></td>
+				</tr>
+			</tbody>
+		</table>
+
+		<div id="content">
+			<table class="layui-table">
+				<thead>
+					<tr>
+						<th>账号</th>
+						<th>充值总金额（元）</th>
+						<th>充值次数</th>
+						<th>账户余额（元）</th>
+						<th>上次充值时间</th>
+						<th>操作</th>
+					</tr>
+				</thead>
+				<tbody id="body">
+
+				</tbody>
+			</table>
+		</div>
+		<div class="page" id="page"></div>
+	</div>
+	<script>
+		var index = 1;
+		var size = 10;
+		var total = 0;
+		var token = getCookie('token');
+		var phone;
+		var startTime;
+		var endTime;
+		function getData(index, size) {
+			phone = $("#phone").val();
+			startTime = $("#startTime").val();
+			endTime = $("#endTime").val();
+			$.ajax({
+				headers:{
+				 	"token": token
+				},
+				dataType : 'JSON',
+				url : api + 'wallet/getWalletList',
+				type : 'post',
+				data : {
+					version : version,
+					curPage : index,
+					pageSize : size,
+					phone : phone,
+					startTime : startTime,
+					endTime : endTime
+				},
+				success : function(res) {
+					if (res.success == true) {
+						if (res.data == null) {
+							$("#body").html("");
+                			$("#top").html("共有数据：0条");
+        					/* layer.open({
+                       		  content: res.message,
+                       		  time: 3000,
+                       		  title:'提示',
+                       		  anim:1,
+                       		  skin:'demo-class'
+                       		}); */
+        					layer.msg(res.message);
+						} else {
+							$("#top").html("共有数据：" + res.data.totalCount + "条");
+							var html = ""
+							$.each(res.data.result, function(index, data) {
+								if(data.updateTime == null){
+									data.updateTime = "暂未充值";
+								}
+								html += 
+									"<tr>" + 
+									"<td>" + data.accountNum + "</td>" + 
+									"<td>" + data.rechargeMoney + "</td>" + 
+									"<td>" + data.rechargeCount + "</td>" + 
+									"<td>" + data.money + "</td>" + 
+									"<td>" + data.updateTime + "</td>" + 
+									"<td><button class='layui-btn' onclick='infoGo(" + data.createUserId + ")'>详情</button></td>"
+									"</tr>";
+							});
+							$("#body").html("");
+							$("#body").html(html);
+							// 分页条
+							laypage.render({
+								elem : 'page',
+								count : res.data.totalCount, //数据总数，从服务端得到
+								limit : size,
+								curr : index,
+								jump : function(obj, first) {
+									if (!first) {
+										getData(obj.curr, obj.limit);
+									}
+								}
+							});
+						}
+					} else {
+						layer.open({
+		               		  content: res.message,
+		               		  time: 3000,
+		               		  title:'提示',
+		               		  anim:1,
+		               		  skin:'demo-class'
+		               	});
+						if(res.code == 403){
+							window.location.href = api + "page/403";
+						}
+						if(res.code == 504){
+							top.location.href = api + "page/login";
+						}
+					}
+				},
+				error : function() {
+					layer.msg('网络错误', {
+						icon : 5,
+						time : 1500
+					});
+				},
+
+			})
+		}
+		var laypage;
+		layui.use('laypage', function() {
+			laypage = layui.laypage;
+
+			//执行一个laypage实例
+
+		});
+		getData(index, size);
+
+		function getCookie(cname) {
+			var name = cname + "=";
+			var ca = document.cookie.split(';');
+			for (var i = 0; i < ca.length; i++) {
+				var c = ca[i].trim();
+				if (c.indexOf(name) == 0)
+					return c.substring(name.length, c.length);
+			}
+			return "";
+		}
+		$("#queryBtn").click(function() {
+			getData(index, size);
+		})
+		
+		function infoGo(id) {
+			if (id) {
+				location.href = api + 'page/checkMoneys?id=' + id
+			}else {
+				layer.open({
+					content : "缺少被充值人id",
+					time : 3000,
+					title : '提示',
+					anim : 1,
+					skin : 'demo-class'
+
+				});
+			}
+		}
+		
+		$("#exportBtn").click(function (){
+			phone = $("#phone").val();
+			startTime = $("#startTime").val();
+			endTime = $("#endTime").val();
+			window.location.href=api+'wallet/exportWallet?phone=' + phone + '&startTime=' + startTime + '&endTime=' + endTime;
+       	})
+	</script>
+
+</body>
+
+</html>

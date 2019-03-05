@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<title>发票申请信息</title>
+<meta name="renderer" content="webkit">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+<link rel="stylesheet" href="../css/font.css">
+<link rel="stylesheet" href="../css/xadmin.css">
+<script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+<script type="text/javascript" src="../lib/layui/layui.js" charset="utf-8"></script>
+<script type="text/javascript" src="../js/xadmin.js"></script>
+<script type="text/javascript" src="../js/config/config.js"></script>
+<!-- 时间组件 -->
+<script>
+	layui.use('laydate', function() {
+		var laydate = layui.laydate;
+		//执行一个laydate实例
+		laydate.render({
+			elem : '#startTime', //指定元素
+			type : 'datetime'
+		});
+		laydate.render({
+			elem : '#endTime', //指定元素
+			type : 'datetime'
+		});
+	});
+</script>
+</head>
+
+<body>
+	<div class="x-nav">
+		<span class="layui-breadcrumb">
+			<a href="main">首页</a>
+			<a href="invoiceList">
+				<cite>发票申请列表</cite>
+			</a>
+		</span>
+		<a class="layui-btn layui-btn-small" style="line-height: 1.6em; margin-top: 3px; float: right"
+			href="javascript:location.replace(location.href);" title="刷新">
+			<i class="layui-icon" style="line-height: 30px">ဂ</i>
+		</a>
+	</div>
+	<div class="x-body">
+		<span id="top" class="x-right" style="line-height: 40px">共有数据：0 条</span>
+		<table class="layui-table">
+			<colgroup>
+				<col width="5%">
+				<col width="40%">
+				<col width="20%">
+				<col width="20%">
+				<col width="15%">
+			</colgroup>
+			<tbody>
+				<tr>
+					<td>
+						<button class="layui-btn" id="queryBtn">查&nbsp;询</button>
+					</td>
+					<td style="display: flex;"><label class="layui-form-label" style="width: 90px;">申请时间</label>
+						<div class="layui-input-block" style="margin-left: 30px;">
+							<input type="text" id="startTime" name="startTime" placeholder="开始时间" autocomplete="off" class="layui-input"/>
+						</div>
+						<div class="layui-input-block" style="margin-left: 30px;">
+							<input type="text" id="endTime" name="endTime" placeholder="结束时间" autocomplete="off" class="layui-input"/>
+						</div>
+					</td>
+					<!-- 状态，0 未完成，1 处理中，2 完成，3 失败 -->
+					<td><select id="status" class="layui-input">
+							<option value="">全部状态</option>
+							<option value="0">未支付</option>
+							<option value="1">待处理</option>
+							<option value="2">完成</option>
+							<option value="3">失败</option>
+					</select></td>
+					<td>
+						<input type="text" id="company" placeholder="请输入发票抬头" autocomplete="off" class="layui-input"/>
+					</td>
+					<td></td>
+				</tr>
+			</tbody>
+		</table>
+
+		<div id="content">
+			<table class="layui-table">
+				<thead>
+					<tr>
+						<th>申请时间</th>
+						<th>状态</th>
+						<th>发票抬头</th>
+						<th>税号</th>
+						<th>发票内容</th>
+						<th>发票金额</th>
+						<th>税费</th>
+						<th>价税合计</th>
+						<th>操作</th>
+					</tr>
+				</thead>
+				<tbody id="body">
+
+				</tbody>
+			</table>
+		</div>
+		<div class="page" id="page"></div>
+	</div>
+	<script>
+		var index = 1;
+		var size = 10;
+		var total = 0;
+		var token = getCookie('token');
+		
+		var startTime;
+		var endTime;
+		var company;
+		
+		getData(index, size);
+		
+		function getData(index, size) {
+			startTime = $("#startTime").val();
+			endTime = $("#endTime").val();
+			company = $("#company").val();
+			$.ajax({
+				headers:{
+				 	"token": token
+				},
+				dataType : 'JSON',
+				url : api + 'invoice/getInvoiceList',
+				type : 'post',
+				data : {
+					version : version,
+					curPage : index,
+					pageSize : size,
+					startTime : startTime,
+					endTime : endTime,
+					company : company
+				},
+				success : function(res) {
+					if (res.success == true) {
+						if (res.data == null) {
+							$("#body").html("");
+                			$("#top").html("共有数据：0条");
+        					layer.msg(res.message);
+						} else {
+							$("#top").html("共有数据：" + res.data.totalCount + "条");
+							var html = ""
+							$.each(res.data.result, function(index, data) {
+								if(data.taxation == null){
+									data.taxation = "";
+								}
+								if(data.priceTaxationSum == null){
+									data.priceTaxationSum = "";
+								}
+								if(data.number == null){
+									data.number = "";
+								}
+								if(data.remark == null){
+									data.remark = "";
+								}
+								if (data.status == 0) {
+									data.status = "未支付";
+								} else if (data.status == 1) {
+									data.status = "待处理";
+								} else if (data.status == 2) {
+									data.status = "完成";
+								} else {
+									data.status = "失败";
+								}
+								var info;
+								if(data.imgUrl != null && data.imgUrl != ''){
+									info = "<button class='layui-btn' onclick='info(" + data.id + ")'>详情</button>";
+								}else{
+									info = "";
+								}
+								html += 
+									"<tr>" + 
+									"<td>" + data.createTime + "</td>" + 
+									"<td>" + data.status + "</td>" + 
+									"<td>" + data.company + "</td>" + 
+									"<td>" + data.number + "</td>" + 
+									"<td>" + data.remark + "</td>" + 
+									"<td>" + data.money + "</td>" + 
+									"<td>" + data.taxation + "</td>" + 
+									"<td>" + data.priceTaxationSum + "</td>" + 
+									"<td><button class='layui-btn' onclick='operation(" + data.id + ")'>操作</button>" + info + "</td>"
+									"</tr>";
+							});
+							$("#body").html("");
+							$("#body").html(html);
+							// 分页条
+							laypage.render({
+								elem : 'page',
+								count : res.data.totalCount, //数据总数，从服务端得到
+								limit : size,
+								curr : index,
+								jump : function(obj, first) {
+									if (!first) {
+										getData(obj.curr, obj.limit);
+									}
+								}
+							});
+						}
+					} else {
+						layer.open({
+		               		  content: res.message,
+		               		  time: 3000,
+		               		  title:'提示',
+		               		  anim:1,
+		               		  skin:'demo-class'
+		               	});
+						if(res.code == 403){
+							window.location.href = api + "page/403";
+						}
+						if(res.code == 504){
+							top.location.href = api + "page/login";
+						}
+					}
+				},
+				error : function() {
+					layer.msg('网络错误', {
+						icon : 5,
+						time : 1500
+					});
+				},
+
+			})
+		}
+		var laypage;
+		layui.use('laypage', function() {
+			laypage = layui.laypage;
+
+			//执行一个laypage实例
+
+		});
+
+		function getCookie(cname) {
+			var name = cname + "=";
+			var ca = document.cookie.split(';');
+			for (var i = 0; i < ca.length; i++) {
+				var c = ca[i].trim();
+				if (c.indexOf(name) == 0)
+					return c.substring(name.length, c.length);
+			}
+			return "";
+		}
+		
+		$("#queryBtn").click(function() {
+			getData(index, size);
+		})
+		
+		function operation(id) {
+			if (id) {
+				location.href = api + 'page/invoiceOperation?id=' + id
+			}else {
+				layer.open({
+					content : "缺少发票id，请刷新重试",
+					time : 3000,
+					title : '提示',
+					anim : 1,
+					skin : 'demo-class'
+				});
+			}
+		}
+		
+		function info(id) {
+			if (id) {
+				location.href = api + 'page/invoiceDetail?id=' + id
+			}else {
+				layer.open({
+					content : "缺少发票id，请刷新重试",
+					time : 3000,
+					title : '提示',
+					anim : 1,
+					skin : 'demo-class'
+				});
+			}
+		}
+	</script>
+
+</body>
+
+</html>

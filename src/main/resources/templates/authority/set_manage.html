@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>设置管理员</title>
+	<meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+	<link rel="stylesheet" href="../css/font.css">
+	<link rel="stylesheet" href="../css/xadmin.css">
+	<script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+	<script type="text/javascript" src="../js/qiniu.min.js"></script>
+	<script type="text/javascript" src="../lib/layui/layui.js" charset="utf-8"></script>
+	<script type="text/javascript" src="../js/xadmin.js"></script>
+	<script type="text/javascript" src="../js/config/config.js"></script>
+	<style>
+	.row-cell-class {
+		padding-top: 50px,
+	}
+	</style>
+</head>
+
+<body>
+	<div class="x-nav">
+		<span class="layui-breadcrumb">
+			<a href="main">首页</a>
+			<a href="users">用户列表</a>
+			<a href="#"><cite>设置管理员</cite></a>
+		</span> 
+		<a class="layui-btn layui-btn-small" style="line-height: 1.6em; margin-top: 3px; float: right"
+			href="javascript:location.replace(location.href);" title="刷新">
+			<i class="layui-icon" style="line-height: 30px">ဂ</i>
+		</a>
+	</div>
+	<div class="x-body">
+		<div class="layui-form-item">
+			<label class="layui-form-label">当前账号</label>
+			<div class="layui-input-block">
+				<input type="text" id="phone" disabled="disabled" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">管理员密码</label>
+			<div class="layui-input-block">
+				<input type="password" id="password" placeholder="请输入管理员登录密码"
+					autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">确认密码</label>
+			<div class="layui-input-block">
+				<input type="password" id="requrePassword" placeholder="请确认管理员登录密码"
+					autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label"></label>
+			<div class="layui-input-block">
+				<span><font style="color: red;">注意：此处设置管理员登录密码只用于登录后台管理系统；小程序登录密码不受任何影响！</font></span>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<div class="layui-input-block">
+				<button id="sumbit-btn" class="layui-btn" lay-submit lay-filter="*">注册管理员</button>
+			</div>
+		</div>
+	</div>
+	<script>
+		var index = 1;
+		var size = 1;
+		var total = 0;
+		var token = getCookie('token');
+		var curWwwPath = window.document.location.href;
+		var idParam = curWwwPath.split("?")[1];
+		var userId = idParam.split("=")[1];
+		var phone = idParam.split("=")[2];
+		$("#phone").val(phone);
+		
+		var password;
+		var requrePassword;
+		
+	    function message(text) {
+	    	layer.open({
+				content : text,
+				time : 3000,
+				title : '提示',
+				anim : 1,
+				skin : 'demo-class'
+
+			});
+	    }
+	    // 提交数据事件
+		$("#sumbit-btn").click(function(){
+			password = $("#password").val();;
+			requrePassword = $("#requrePassword").val();;
+		    if (password == "") {
+		    	message("管理员密码不能为空");return;
+		    }
+		    if (requrePassword == "") {
+		    	message("确认密码");return;
+		    }
+		    submitData();
+		})
+		
+		// 提交数据
+		function submitData() {
+			$.ajax({
+				headers:{
+				 	"token": token
+				},
+				dataType : 'JSON',
+				url : api + 'user/regist',
+				type : 'post',
+				data : {
+					userName : phone,
+					password : password,
+					requrePassword : requrePassword,
+					version : version
+				},
+				success : function(res) {
+					if (res.success == true) {
+						layer.msg(res.message, {
+						  time : 0, //不自动关闭
+						  title : '提示',
+						  anim : 1,
+						  skin : 'demo-class',
+						  btn : ['确定'],
+						  yes : function(index){
+								layer.close(index);
+								window.history.go(-1);
+						  	}
+						});
+					} else {
+						layer.open({
+							content : res.message,
+							time : 3000,
+							title : '提示',
+							anim : 1,
+							skin : 'demo-class'
+						});
+						if(res.code == 403){
+							window.location.href = api + "page/403";
+						}
+						if(res.code == 504){
+							top.location.href = api + "page/login";
+						}
+					}
+				},
+				error : function() {
+					layer.msg('网络错误', {
+						icon : 5,
+						time : 1500
+					});
+				},
+			})
+		}
+
+		function getCookie(cname) {
+			var name = cname + "=";
+			var ca = document.cookie.split(';');
+			for (var i = 0; i < ca.length; i++) {
+				var c = ca[i].trim();
+				if (c.indexOf(name) == 0)
+					return c.substring(name.length, c.length);
+			}
+			return "";
+		}
+	</script>
+</body>
+</html>

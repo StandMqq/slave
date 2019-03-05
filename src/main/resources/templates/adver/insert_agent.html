@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>录入代理商</title>
+	<meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+	<link rel="stylesheet" href="../css/font.css">
+	<link rel="stylesheet" href="../css/xadmin.css">
+	<script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+	<script type="text/javascript" src="../js/qiniu.min.js"></script>
+	<script type="text/javascript" src="../lib/layui/layui.js" charset="utf-8"></script>
+	<script type="text/javascript" src="../js/xadmin.js"></script>
+	<script type="text/javascript" src="../js/config/config.js"></script>
+	<style>
+	.row-cell-class {
+		padding-top: 50px,
+	}
+	</style>
+</head>
+
+<body>
+	<div class="x-nav">
+		<span class="layui-breadcrumb"> <a href="main">首页</a> <a
+			href="users">用户列表</a> <a id="userInfo">用户信息绑定</a> <a href="#"><cite>录入代理商</cite></a>
+		</span> <a class="layui-btn layui-btn-small"
+			style="line-height: 1.6em; margin-top: 3px; float: right"
+			href="javascript:location.replace(location.href);" title="刷新"> <i
+			class="layui-icon" style="line-height: 30px">ဂ</i>
+		</a>
+	</div>
+	<div class="x-body">
+		<div class="layui-form-item">
+			<label class="layui-form-label">执照图片</label>
+			<div class="layui-input-block">
+				<input type="file" name="filetrans" autocomplete="off"
+					class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">代理商姓名</label>
+			<div class="layui-input-block">
+				<input type="text" id="name" required name="name"
+					lay-verify="required" placeholder="请输入代理商姓名" autocomplete="off"
+					class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">手机号</label>
+			<div class="layui-input-block">
+				<input type="text" id="phone" name="phone" required
+					lay-verify="required" placeholder="请输入手机号" autocomplete="off"
+					class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">城市</label>
+			<div class="layui-input-block">
+				<input type="text" id="city" name="city" required
+					lay-verify="required" placeholder="请输入城市" autocomplete="off"
+					class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">邮箱</label>
+			<div class="layui-input-block">
+				<input type="text" id="email" name="email" required
+					lay-verify="required" placeholder="请输入邮箱" autocomplete="off"
+					class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">公司名称</label>
+			<div class="layui-input-block">
+				<input type="text" id="company" name="company" required
+					lay-verify="required" placeholder="请输入公司名称" autocomplete="off"
+					class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">地址</label>
+			<div class="layui-input-block">
+				<input type="text" id="address" name="address" required
+					lay-verify="required" placeholder="请输入区域地址" autocomplete="off"
+					class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">详细地址</label>
+			<div class="layui-input-block">
+				<input type="text" id="addressDetail" name="addressDetail" required
+					lay-verify="required" placeholder="请输入详细地址" autocomplete="off"
+					class="layui-input">
+			</div>
+		</div>
+
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">营业执照编号</label>
+			<div class="layui-input-block">
+				<input type="text" id="businessNo" name="businessLicense" required
+					lay-verify="required" placeholder="请输入编号" autocomplete="off"
+					class="layui-input">
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<div class="layui-input-block">
+				<button id="sumbit-btn" class="layui-btn" lay-submit lay-filter="*">立即提交</button>
+			</div>
+		</div>
+
+
+
+	</div>
+	<script>
+		var index = 1;
+		var size = 1;
+		var total = 0;
+		var token = getCookie('token');
+		var curWwwPath = window.document.location.href;
+		var idParam = curWwwPath.split("?")[1];
+		var userId = idParam.split("=")[1];
+		var email; 
+		var phone; 
+		var key;
+		var address;
+		var addressDetail;
+		var name;
+		var company;
+		var city;
+		var bussinessNo;
+		if (token) {
+		}		
+		$("#userInfo").attr("href", "insertUsersBlock?id="+ userId);
+		 //用于生成uuid
+	    function S4() {
+	        return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+	    }
+	    function guid() {
+	        return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+	    }
+	    // 获取key
+	    function getKey() {
+	    	var files = $('input[name="filetrans"]').prop('files');
+	    	var dir = "credentials/";
+			var end = files[0].name.split('.').splice(-1);
+			var key =  dir + "cegz"+ guid() + "." + end;
+	    	return key;
+	    }
+	    // 校验图片大小
+	    
+	    function checkFile() {
+	    	var files = $('input[name="filetrans"]').prop('files');
+			if (files.length == 0) {
+				layer.open({
+					content : '请选择文件',
+					time : 3000,
+					title : '提示',
+					anim : 1,
+					skin : 'demo-class'
+				});
+				return false;
+			}		
+	    	var size = files[0].size / 1024;
+	    	if (size > 1024) {
+	    		layer.open({
+					content : '图片大小不能超过1M',
+					time : 3000,
+					title : '提示',
+					anim : 1,
+					skin : 'demo-class'
+
+				});
+	    		return false
+	    	}
+	    	return true
+	    }
+		// 上传图片
+		// 上传配置
+		var config = {
+			useCdnDomain: true,
+			region: qiniu.region.z0
+		}
+		// 上传回调
+		var observer = {
+			next(res){
+			},
+			error(err){
+			}, 
+			complete(res){
+			  submitData(key)
+			}
+		}
+		// 上传设置
+		var putExtra = {
+				  fname: "",
+				  params: {},
+				  mimeType:["image/png", "image/jpeg", "image/gif"]
+				};
+		function uploadImage(file, token, key, call) {			
+			// 上传开始
+			var observable = qiniu.upload(file, key, token, putExtra, config);
+		    var subscription = observable.subscribe(observer) 
+		   
+		}	
+	    // 获取token
+		function getToken(){
+			$.ajax({
+				headers:{
+				 	"token": token
+				},
+				dataType : 'JSON',
+				url : api + 'auth/getUpToken',
+				type : 'post',
+				data : {
+					version : version,
+				},
+				success : function(res) {
+					if (res.success) {
+						var token = res.data;
+						var files = $('input[name="filetrans"]').prop('files');
+						// 校验图片
+						if (checkFile()) {
+							key = getKey();							
+							// 上传图片
+							uploadImage(files[0], token, key);							
+						}						
+					} else {
+						layer.open({
+							content : res.message,
+							time : 3000,
+							title : '提示',
+							anim : 1,
+							skin : 'demo-class'
+						});
+						if(res.code == 403){
+							window.location.href = api + "page/403";
+						}
+						if(res.code == 504){
+							top.location.href = api + "page/login";
+						}
+					}
+				}
+			});
+		}
+	    function message(text) {
+	    	layer.open({
+				content : text,
+				time : 3000,
+				title : '提示',
+				anim : 1,
+				skin : 'demo-class'
+
+			});
+	    }
+	    function check() {
+			if (uploadStatus == 0) {
+				layer.open({
+					content : '请先上传图片',
+					time : 3000,
+					title : '提示',
+					anim : 1,
+					skin : 'demo-class'
+
+				});
+				return false;
+			}
+			return true;
+	    }
+	    // 提交数据事件
+		$("#sumbit-btn").click(function(){
+			email = $("#email").val();
+			name = $("#name").val();
+			phone = $("#phone").val();
+			businessNo = $("#businessNo").val();
+			address = $("#address").val();
+			addressDetail = $("#addressDetail").val();
+		    company = $("#company").val();
+		    city = $("#city").val();
+		    if (name == "") {
+		    	message("姓名不能为空");return;
+		    }
+		    if (phone == "") {
+		    	message("手机号不能为空");return;
+		    }
+		    if (city == "") {
+		    	message("城市不能为空");return;
+		    }
+		    if (email == "") {
+		    	message("邮箱不能为空");return;
+		    }
+		    if (company == "") {
+		    	message("公司名称不能为空");return;
+		    }
+		    if (address == "") {
+		    	message("区域地址不能为空");return;
+		    }
+		    if (addressDetail == "") {
+		    	message("详细地址不能为空");return;
+		    }
+		    if (businessNo == "") {
+		    	message("执照编号不能为空");return;
+		    }
+		    getToken();
+		})	
+		
+		
+		// 提交数据
+		function submitData(key) {
+						
+			$.ajax({
+				headers:{
+				 	"token": token
+				},
+				dataType : 'JSON',
+				url : api + 'backstageHandleData/insertAgent',
+				type : 'post',
+				data : {
+					userId :userId,
+					version : version,
+					businessFile:key,
+					name:name,
+					phone:phone,
+					email:email,
+					address:address,
+					addressDetail:addressDetail,
+					city:city,
+					company:company,
+					businessLicense:businessNo					
+				},
+				success : function(res) {
+					if (res.success == true) {
+						layer.msg(res.message, {
+							  time : 0, //不自动关闭
+							  title : '提示',
+							  anim : 1,
+							  skin : 'demo-class',
+							  btn : ['确定'],
+							  yes : function(index){
+							    layer.close(index);
+							    /* window.location.reload(); */
+							    window.history.go(-1);
+							  }
+							});
+					} else {
+						layer.open({
+							content : res.message,
+							time : 3000,
+							title : '提示',
+							anim : 1,
+							skin : 'demo-class'
+						});
+						if(res.code == 403){
+							window.location.href = api + "page/403";
+						}
+						if(res.code == 504){
+							top.location.href = api + "page/login";
+						}
+					}
+				},
+				error : function() {
+					layer.msg('网络错误', {
+						icon : 5,
+						time : 1500
+					});
+				},
+			})
+		}
+		
+		function getCookie(cname) {
+			var name = cname + "=";
+			var ca = document.cookie.split(';');
+			for (var i = 0; i < ca.length; i++) {
+				var c = ca[i].trim();
+				if (c.indexOf(name) == 0)
+					return c.substring(name.length, c.length);
+			}
+			return "";
+		}
+	</script>
+</body>
+</html>

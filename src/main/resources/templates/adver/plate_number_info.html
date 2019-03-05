@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>车牌信息</title>
+	<meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+	<link rel="stylesheet" href="../css/font.css">
+	<link rel="stylesheet" href="../css/xadmin.css">
+	<script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+	<script type="text/javascript" src="../lib/layui/layui.js" charset="utf-8"></script>
+	<script type="text/javascript" src="../js/xadmin.js"></script>
+	<script type="text/javascript" src="../js/config/config.js"></script>
+</head>
+
+<body>
+	<div class="x-nav">
+		<span class="layui-breadcrumb"> <a href="main">首页</a> <a
+			href="advertisements"><cite>广告列表</cite></a> <a href="#"><cite>车辆列表</cite></a>
+		</span> <a class="layui-btn layui-btn-small"
+			style="line-height: 1.6em; margin-top: 3px; float: right"
+			href="javascript:location.replace(location.href);" title="刷新"> <i
+			class="layui-icon" style="line-height: 30px">ဂ</i></a>
+	</div>
+	<div class="x-body">
+
+		<span class="x-right" style="line-height: 40px">共有数据：<span
+			id="num"></span> 条
+		</span>
+		<table class="layui-table">
+			<colgroup>
+				<col width="10%">
+				<col width="20%">
+				<col width="70%">
+			</colgroup>
+			<tbody>
+				<tr>
+					<td><button class="layui-btn" id="queryBtn">查&nbsp;询</button></td>
+					<td><input type="text" id="plateNumber" placeholder="请输入车牌号码"
+						autocomplete="off" class="layui-input"></td>
+					<td></td>
+				</tr>
+			</tbody>
+		</table>
+		<div id="content">
+			<table class="layui-table">
+				<thead>
+					<tr>
+						<th>车牌号码</th>
+						<th>品牌</th>
+						<th>图片</th>
+						<th>车辆出厂日期</th>
+					</tr>
+				</thead>
+				<tbody id="listBox">
+
+				</tbody>
+			</table>
+		</div>
+		<div class="page" id="page"></div>
+	</div>
+	<script>
+		var ck = getCookie('token');
+		var curPage = 1;
+		var pageSize = 10;
+		var plateNumber;
+
+		var curWwwPath = window.document.location.href;
+		var idParam = curWwwPath.split("?")[1];
+		var advertisementId = idParam.split("=")[1];
+
+		var laypage;
+		layui.use('laypage', function() {
+			laypage = layui.laypage;
+
+			//执行一个laypage实例
+
+		});
+		getData(curPage)
+		function getData(curPage) {
+			plateNumber = $("#plateNumber").val();
+			$.ajax({
+				headers:{
+				 	"token": ck
+				},
+				dataType : 'JSON',
+				url : api + 'backstageQueryData/queryPlateNumberInfo',
+				type : 'post',
+				data : {
+					version : version,
+					curPage : curPage,
+					pageSize : pageSize,
+					advertisementId : advertisementId,
+					plateNumber : plateNumber
+				},
+				success : function(res) {
+					if (res.success == true) {
+						if (res.data == null) {
+							$('#listBox').html("");
+							$('#num').html(0);
+							layer.msg(res.message);
+						} else {
+							var data = res.data.resultList
+							var list = ''
+							for (var i = 0; i < data.length; i++) {
+								list += "<tr>"
+										+ "<td>"
+										+ data[i].plateNumber
+										+ "</td>"
+										+ "<td>"
+										+ data[i].model
+										+ "</td>"
+										+ "<td><img src="
+										+ data[i].pictureUrl
+										+ " width='100px;' height='50px;' onclick='enlargeShow(\"点击图片旋转\",\""
+										+ data[i].pictureUrl
+										+ "\")'/></td>" + "<td>"
+										+ data[i].carBirthday + "</td>"
+										+ "</tr>"
+							}
+
+							$('#listBox').html(list)
+							$('#num').html(res.data.totalCount)
+
+							laypage.render({
+								elem : 'page', //注意，这里的 test1 是 ID，不用加 # 号
+								count : res.data.totalCount, //数据总数，从服务端得到
+								limit : pageSize,
+								curr : curPage,
+								jump : function(obj, first) {
+									if (!first) {
+										getData(obj.curr);
+									}
+								}
+							});
+						}
+					} else {
+						layer.open({
+		               		  content: res.message,
+		               		  time: 3000,
+		               		  title:'提示',
+		               		  anim:1,
+		               		  skin:'demo-class'
+		               	});
+						if(res.code == 403){
+							window.location.href = api + "page/403";
+						}
+						if(res.code == 504){
+							top.location.href = api + "page/login";
+						}
+					}
+				},
+				error : function() {
+					layer.msg('网络错误', {
+						icon : 5,
+						time : 1500
+					});
+				},
+			})
+		}
+
+		function enlargeShow(name, url) {
+			layer.open({
+				type : 1,
+				title : false,
+				closeBtn : 1,
+				shadeClose : true,
+				area: ['80%', '80%'],
+				content : "<img onclick='clickImg(this)' style='width:100%;' alt=" + name + " title="
+						+ name + " src=" + url + " />"
+			});
+		}
+		
+		clickImg = function(obj) {
+			var thisObj = $(obj)
+			thisObj.css({
+				"transform" : "rotate(90deg)"
+			})
+			thisObj.click(function() {
+				var nowDeg = thisObj.css("transform");
+				if (nowDeg != 'none') {
+					var values = nowDeg.split('(')[1].split(')')[0].split(',');
+					var a = values[0];
+					var b = values[1];
+					var c = values[2];
+					var d = values[3];
+					nowDeg = getmatrix(a, b, c, d);
+				} else {
+					nowDeg = 90
+				}
+				thisObj.css({
+					"transform" : "rotate(" + nowDeg + "deg)"
+				})
+			})
+		}
+		
+		function getmatrix(a,b,c,d){
+            var aa=Math.round(180*Math.asin(a)/ Math.PI);
+            var bb=Math.round(180*Math.acos(b)/ Math.PI);
+            var cc=Math.round(180*Math.asin(c)/ Math.PI);
+            var dd=Math.round(180*Math.acos(d)/ Math.PI);
+            var deg=0;
+            if(aa==bb||-aa==bb){
+                deg= 90 +dd;
+            }else if(-aa+bb==180){
+                deg=270+cc;
+            }else if(aa+bb==180){
+                deg=450-cc||450-dd;
+            }
+            return deg>=360?0:deg;
+        }
+
+		function getCookie(cname) {
+			var name = cname + "=";
+			var ca = document.cookie.split(';');
+			for (var i = 0; i < ca.length; i++) {
+				var c = ca[i].trim();
+				if (c.indexOf(name) == 0)
+					return c.substring(name.length, c.length);
+			}
+			return "";
+		}
+
+		$("#queryBtn").click(function() {
+			getData(curPage);
+		})
+	</script>
+</body>
+
+</html>

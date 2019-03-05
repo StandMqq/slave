@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>车辆详情</title>
+	<meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+	<script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+	<link rel="stylesheet" href="../css/font.css">
+	<link rel="stylesheet" href="../css/xadmin.css">
+	<script type="text/javascript" src="../js/xadmin.js"></script>
+	<script src="../lib/layui/layui.js" charset="utf-8"></script>
+	<script src="../js/config/config.js"></script>
+</head>
+<body>
+	<div class="x-body layui-anim layui-anim-up">
+		<span class="layui-breadcrumb"> <a href="main">首页</a> <a
+			href="carList">车辆列表</a> <a href="#"><cite>审核车辆</cite></a>
+		</span> <a class="layui-btn layui-btn-small"
+			style="line-height: 1.6em; margin-top: 3px; float: right"
+			href="javascript:location.replace(location.href);" title="刷新"> <i
+			class="layui-icon" style="line-height: 30px">ဂ</i></a>
+
+		<fieldset class="layui-elem-field">
+			<legend>详情</legend>
+			<div class="layui-field-box">
+				<table class="layui-table">
+					<tbody>
+						<tr>
+							<th>保荐方</th>
+							<td id="company"></td>
+						</tr>
+						<tr>
+							<th>车牌号</th>
+							<td>
+								<input type="text" id="carNumber" name="carNumber" required
+									lay-verify="required" placeholder="请输入车牌号" autocomplete="off"
+									class="layui-input">
+							</td>
+						</tr>
+						<tr>
+							<th>品牌</th>
+							<td>
+								<input type="text" id="model" name="model" required
+									lay-verify="required" placeholder="请输入车品牌" autocomplete="off"
+									class="layui-input">
+							</td>
+						</tr>
+						<tr>
+							<th>出厂日期</th>
+							<td>
+								<input type="text" id="birthDate" placeholder="请选择日期"
+									autocomplete="off" class="layui-input">
+							</td>
+						</tr>
+						<tr>
+							<th>行驶证照片</th>
+							<td style="height: 200px;"><img
+								style="height: 100%; max-width: 400px" id="image" src="" alt="">
+							</td>
+						</tr>
+						<tr>
+					</tbody>
+				</table>
+			</div>
+		</fieldset>
+	</div>
+	<fieldset>
+		<table id="wait" class="layui-table">
+			<tbody>
+				<tr>
+					<th>备注</th>
+					<td><select id="reason" onchange="customize()"></select></td>
+					<td><textarea id="remark" readonly="readonly"
+							placeholder="审核描述" class="layui-textarea"></textarea></td>
+				</tr>
+				<tr>
+					<th></th>
+					<th>
+						<button class="layui-btn" onclick="pass('通过')">
+							<i class="layui-icon"></i>通过
+						</button>
+					</th>
+					<td>
+						<button class="layui-btn layui-btn-danger" onclick="reject('拒绝')">
+							<i class="layui-icon"></i>拒绝
+						</button>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<table id="pass" class="layui-table">
+			<tbody>
+				<tr>
+					<th>备注</th>
+					<td><select id="reason" onchange="customize()"></select></td>
+					<td><textarea id="remark" readonly="readonly"
+							placeholder="取消资质描述" class="layui-textarea"></textarea></td>
+				</tr>
+				<tr>
+					<th></th>
+					<th></th>
+					<td>
+						<button class="layui-btn layui-btn-danger"
+							onclick="reject('取消资质')">
+							<i class="layui-icon"></i>取消资质
+						</button>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<table id="not" class="layui-table">
+			<tbody>
+				<tr>
+					<th></th>
+					<th></th>
+					<td>
+						<button class="layui-btn" onclick="pass('通过')">
+							<i class="layui-icon"></i>通过
+						</button>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</fieldset>
+	<div class="x-body layui-anim layui-anim-up"></div>
+	<script>
+		var index = 1;
+		var size = 1;
+		var total = 0;
+		var ck = getCookie('token');
+		var curWwwPath = window.document.location.href;
+		var idParam = curWwwPath.split("?")[1];
+		var id = idParam.split("=")[1];
+		
+		var carNumber;
+		var model;
+		var birthDate;
+		
+		//执行一个laydate实例
+		layui.use('laydate', function(){
+			var laydate = layui.laydate;
+			laydate.render({
+				elem: '#birthDate' //指定元素
+			});
+		});
+
+		$.ajax({
+			headers:{
+			 	"token": ck
+			},
+			dataType : 'JSON',
+			url : api + 'car/getCarById',
+			type : 'post',
+			data : {
+				version : version,
+				id : id
+			},
+			success : function(res) {
+				if (res.success == true) {
+					if (res.data == null) {
+						layer.open({
+							content : res.message,
+							time : 3000,
+							title : '提示',
+							anim : 1,
+							skin : 'demo-class'
+
+						});
+					} else {
+						var data = res.data.view
+						if(data.status == 0){ //审核中
+							$('#not').remove();
+							$('#pass').remove();
+						}else if(data.status == 1){ //通过
+							$('#not').remove();
+							$('#wait').remove();
+						}else if(data.status == 2){ //未通过
+							$('#pass').remove();
+							$('#wait').remove();
+						}
+						
+						$('#company').html(data.company);
+						$('#carNumber').val(data.plateNumber);
+						$('#model').val(data.model);
+						$('#birthDate').val(data.carBirthday);
+						$('#image').attr('src', data.pictureUrl);
+						$('#image').attr('onclick', "enlargeShow('点击图片旋转','" + data.pictureUrl + "')");
+						
+						var reasonList = res.data.dataDictionaryList
+						var reason = ''
+						for (var i = 0; i < reasonList.length; i++) {
+							reason += "<option value='"+reasonList[i].value+"'>"
+									+ reasonList[i].value + "</option>"
+						}
+						reason += "<option value='customize'>自定义......</option>"
+						$('#reason').html(reason);
+					}
+				} else {
+					layer.open({
+						content : res.message,
+						time : 3000,
+						title : '提示',
+						anim : 1,
+						skin : 'demo-class'
+					});
+					if(res.code == 403){
+						window.location.href = api + "page/403";
+					}
+					if(res.code == 504){
+						top.location.href = api + "page/login";
+					}
+				}
+			},
+			error : function() {
+				layer.msg('网络错误', {
+					icon : 5,
+					time : 1500
+				});
+			},
+		})
+		
+		function enlargeShow(name, url) {
+		   layer.open({
+		      type: 1,
+		      title: false,
+		      closeBtn: 1,
+		      shadeClose: true,
+		      area: ['80%', '80%'],
+		      content: "<img onclick='clickImg(this)' style='width:100%;' alt=" + name + " title=" + name + " src=" + url + " />"
+		   });
+		}
+
+		clickImg = function(obj) {
+			var thisObj = $(obj)
+			thisObj.css({
+				"transform" : "rotate(90deg)"
+			})
+			thisObj.click(function() {
+				var nowDeg = thisObj.css("transform");
+				if (nowDeg != 'none') {
+					var values = nowDeg.split('(')[1].split(')')[0].split(',');
+					var a = values[0];
+					var b = values[1];
+					var c = values[2];
+					var d = values[3];
+					nowDeg = getmatrix(a, b, c, d);
+				} else {
+					nowDeg = 90
+				}
+				thisObj.css({
+					"transform" : "rotate(" + nowDeg + "deg)"
+				})
+			})
+		}
+		
+		function getmatrix(a,b,c,d){
+            var aa=Math.round(180*Math.asin(a)/ Math.PI);
+            var bb=Math.round(180*Math.acos(b)/ Math.PI);
+            var cc=Math.round(180*Math.asin(c)/ Math.PI);
+            var dd=Math.round(180*Math.acos(d)/ Math.PI);
+            var deg=0;
+            if(aa==bb||-aa==bb){
+                deg= 90 +dd;
+            }else if(-aa+bb==180){
+                deg=270+cc;
+            }else if(aa+bb==180){
+                deg=450-cc||450-dd;
+            }
+            return deg>=360?0:deg;
+        }
+
+		function pass(title) {
+			carNumber = $("#carNumber").val();
+			model = $("#model").val();
+			birthDate = $("#birthDate").val();
+			if (carNumber == "") {
+		    	message("车牌号不能为空");return;
+		    }
+		    if (model == "") {
+		    	message("品牌不能为空");return;
+		    }
+		    if (birthDate == "") {
+		    	message("出厂日期不能为空");return;
+		    }
+			layer.confirm('确认'+title+'？', function(index) {
+				$.ajax({
+					headers:{
+					 	"token": ck
+					},
+					dataType : 'JSON',
+					url : api + 'car/carsStatusExamine',
+					type : 'post',
+					data : {
+						version : version,
+						id : id,
+						status : 1,
+						reason : '',
+						carNumber : carNumber,
+						model : model,
+						birthDate : birthDate
+					},
+					success : function(res) {
+						layer.msg(res.message, {
+							icon : 1,
+							time : 1500
+						});
+						if (res.success == true) {
+
+							setTimeout(function() {
+								window.history.go(-1);
+							}, 2000)
+						} else {
+							layer.open({
+								content : res.message,
+								time : 3000,
+								title : '提示',
+								anim : 1,
+								skin : 'demo-class'
+							});
+							if(res.code == 403){
+								window.location.href = api + "page/403";
+							}
+							if(res.code == 504){
+								top.location.href = api + "page/login";
+							}
+						}
+					},
+					error : function() {
+						layer.msg('网络错误', {
+							icon : 5,
+							time : 1500
+						});
+					},
+				})
+			});
+		}
+
+		function reject(title) {
+			var reason = $('#reason').val();
+			var remark = $('#remark').val();
+			if(reason == 'customize'){
+				if (remark == null || remark == "") {
+					layer.msg('拒绝选择自定义时，'+title+'描述不能为空', {
+						icon : 5,
+						time : 1000
+					});
+					return false;
+				}
+				if(remark != null && remark != ''){
+					if (remark.length > 40) {
+						layer.msg(title+'描述不超过40字!', {
+							icon : 5,
+							time : 1000
+						});
+						return false;
+					}
+				}
+				reason = remark;
+			}
+			
+			carNumber = $("#carNumber").val();
+			model = $("#model").val();
+			birthDate = $("#birthDate").val();
+			
+			layer.confirm('确认'+title+'？', function(index) {
+				$.ajax({
+					headers:{
+					 	"token": ck
+					},
+					dataType : 'JSON',
+					url : api + 'car/carsStatusExamine',
+					type : 'post',
+					data : {
+						version : version,
+						id : id,
+						status : 2,
+						reason : reason,
+						carNumber : carNumber,
+						model : model,
+						birthDate : birthDate
+					},
+					success : function(res) {
+						layer.msg(res.message, {
+							icon : 1,
+							time : 1000
+						});
+						if (res.success == true) {
+							setTimeout(function() {
+								window.history.go(-1);
+							}, 2000)
+						} else {
+							layer.open({
+								content : res.message,
+								time : 3000,
+								title : '提示',
+								anim : 1,
+								skin : 'demo-class'
+							});
+							if(res.code == 403){
+								window.location.href = api + "page/403";
+							}
+							if(res.code == 504){
+								top.location.href = api + "page/login";
+							}
+						}
+					},
+					error : function() {
+						layer.msg('网络错误', {
+							icon : 5,
+							time : 1500
+						});
+					},
+				})
+			});
+		}
+
+		function returnTop() {
+			window.history.go(-1);
+		}
+
+		function getParam(name) {
+			var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+			var r = window.location.search.substr(1).match(reg);
+			if (r != null)
+				return decodeURI(r[2]); //对参数进行decodeURI解码
+			return null;
+		}
+		
+		function getCookie(cname) {
+			var name = cname + "=";
+			var ca = document.cookie.split(';');
+			for (var i = 0; i < ca.length; i++) {
+				var c = ca[i].trim();
+				if (c.indexOf(name) == 0)
+					return c.substring(name.length, c.length);
+			}
+			return "";
+		}
+
+		function customize() {
+			var reason = $("#reason").val();
+			if(reason == 'customize'){
+				$("#remark").removeAttr("readonly");
+			}else{
+				$("#remark").val('');
+				$("#remark").attr('readonly','readonly'); 
+			}
+		}
+		
+		function message(text) {
+	    	layer.open({
+				content : text,
+				time : 3000,
+				title : '提示',
+				anim : 1,
+				skin : 'demo-class'
+
+			});
+	    }
+	</script>
+</body>
+</html>

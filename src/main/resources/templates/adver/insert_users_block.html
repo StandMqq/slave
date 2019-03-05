@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>用户信息绑定</title>
+	<meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+	<link rel="stylesheet" href="../css/font.css">
+	<link rel="stylesheet" href="../css/xadmin.css">
+	<script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+	<script type="text/javascript" src="../js/qiniu.min.js"></script>
+	<script type="text/javascript" src="../lib/layui/layui.js" charset="utf-8"></script>
+	<script type="text/javascript" src="../js/xadmin.js"></script>
+	<script type="text/javascript" src="../js/config/config.js"></script>
+	<style>
+	body{
+			background-color:#D7FFEE;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="x-nav">
+		<span class="layui-breadcrumb">
+		 <a href="main">首页</a>
+		 <a href="users">用户列表</a>
+		 <a href="#"><cite>用户信息绑定</cite>	
+		</a>
+		</span> <a class="layui-btn layui-btn-small "
+			style="line-height: 1.6em; margin-top: 3px; float: right"
+			href="javascript:location.replace(location.href);" title="刷新"> <i
+			class="layui-icon" style="line-height: 30px">ဂ</i></a>
+	</div>
+	<div class="x-body">
+		<div class="layui-card">
+			<div class="layui-card-header">车主信息</div>
+			<div class="layui-card-body" id="car"></div>
+		</div>
+		<div class="layui-card">
+			<div class="layui-card-header">广告主信息</div>
+			<div class="layui-card-body" id="advertiser"></div>
+		</div>
+		<div class="layui-card">
+			<div class="layui-card-header">代理商信息</div>
+			<div class="layui-card-body" id="agent"></div>
+		</div>
+		<div class="layui-card">
+			<div class="layui-card-header" >保荐方信息</div>
+			<div class="layui-card-body" id="sponsor"></div>
+		</div>
+	</div>
+	<script>
+	    var token = getCookie('token');
+		var curWwwPath = window.document.location.href;
+		var idParam = curWwwPath.split("?")[1];
+		var id = idParam.split("=")[1];
+	    function message(text) {
+	    	layer.open({
+				content : text,
+				time : 3000,
+				title : '提示',
+				anim : 1,
+				skin : 'demo-class'
+			});
+	    }
+		
+		// 提交数据
+		function getData() {	
+			$.ajax({
+				headers:{
+				 	"token": token
+				},
+				dataType : 'JSON',
+				url : api + 'backstageHandleData/getUsersRoleByUserId',
+				type : 'post',
+				data : {
+					version : version,
+					userId:id
+				},
+				success : function(res) {
+					if (res.success == true) {
+						// 状态 0 未填写，1 审核中，2 成功，3 失败
+						$("#car").html("");
+						if (res.data.contact == 0) {
+							var html ='<a id = "addCar" class="layui-btn layui-btn-primary" href = '+api + "page/insertCarContact?id=" + id +'><i class="layui-icon-ok"></i> 我要认证</a>';						
+							$("#car").html(html);
+						} else if (res.data.contact == 1) {
+							var html ='<button id = "addUser" class="layui-btn layui-btn-normal"><i class="layui-icon-ok"></i> 审核中...</button>';
+							$("#car").html(html);
+						} else if (res.data.contact == 2) {
+							var html ='<button id = "addUser" class="layui-btn"><i class="layui-icon-ok"></i>认证成功</button>';
+							html += '<a id = "addCar" class="layui-btn layui-btn-primary" href = '+api + "page/insertCar?id=" + id +'><i class="layui-icon-ok"></i>添加车辆</a>';
+							$("#car").html(html);
+						} else {
+							var html ='<button id = "addUser" class="layui-btn layui-btn-danger"><i class="layui-icon-ok"></i> 审核失败</button>';
+							$("#car").html(html);
+						}
+						$("#advertiser").html("");
+						if (res.data.advertiser == 0) {
+							var html ='<a id = "addAdvertiser" class="layui-btn layui-btn-primary" href = '+ api + "page/insertAdvertiser?id=" + id +'><i class="layui-icon-ok"></i> 我要认证</a>';
+							$("#advertiser").html(html);
+						} else if (res.data.advertiser == 1) {
+							var html ='<button id = "addUser" class="layui-btn layui-btn-normal"><i class="layui-icon-ok"></i> 审核中...</button>';
+							$("#advertiser").html(html);
+						} else if (res.data.advertiser == 2) {
+							var html ='<button id = "addUser" class="layui-btn"><i class="layui-icon-ok"></i> 认证成功</button>';
+							html += '<a id = "addAdvertisement" class="layui-btn layui-btn-primary" href = '+api + "page/insertAdvertisement?id=" + id +'><i class="layui-icon-ok"></i>上传广告</a>';
+							$("#advertiser").html(html);
+						} else {
+							var html ='<button id = "addUser" class="layui-btn layui-btn-danger"><i class="layui-icon-ok"></i> 审核失败</button>';
+							$("#advertiser").html(html);
+						}
+						$("#agent").html("");
+						if (res.data.agent == 0) {
+							var html ='<a id = "addAgent" class="layui-btn layui-btn-primary" href = '+ api  + "page/insertAgent?id=" + id +'><i class="layui-icon-ok"></i> 我要认证</a>';
+							$("#agent").html(html);
+						} else if (res.data.agent == 1) {
+							var html ='<button id = "addUser" class="layui-btn layui-btn-normal"><i class="layui-icon-ok"></i> 审核中...</button>';
+							$("#agent").html(html);
+						} else if (res.data.agent == 2) {
+							var html ='<button id = "addUser" class="layui-btn"><i class="layui-icon-ok"></i> 认证成功</button>';
+							$("#agent").html(html);
+						} else {
+							var html ='<button id = "addUser" class="layui-btn layui-btn-danger"><i class="layui-icon-ok"></i> 审核失败</button>';
+							$("#agent").html(html);
+						}
+						$("#sponsor").html("");
+						if (res.data.sponsor == 0) {
+							var html ='<a id = "addUser" class="layui-btn layui-btn-primary" href = '+ api + "page/insertSponsor?id=" + id +'><i class="layui-icon-ok"></i> 我要认证</a>';
+							$("#sponsor").html(html);
+						} else if (res.data.sponsor == 1) {
+							var html ='<button id = "addUser" class="layui-btn layui-btn-normal"><i class="layui-icon-ok"></i> 审核中...</button>';
+							$("#sponsor").html(html);
+						} else if (res.data.sponsor == 2) {
+							var html ='<button id = "addUser" class="layui-btn"><i class="layui-icon-ok"></i> 认证成功</button>';
+							$("#sponsor").html(html);
+						} else {
+							var html ='<button id = "addUser" class="layui-btn layui-btn-danger"><i class="layui-icon-ok"></i> 审核失败</button>';
+							$("#sponsor").html(html);
+						}
+					} else {
+						message(res.message);
+					}
+
+				},
+				error : function() {
+					layer.msg('网络错误', {
+						icon : 5,
+						time : 1500
+					});
+				},
+
+			})
+		}	
+		getData();
+		function getCookie(cname) {
+			var name = cname + "=";
+			var ca = document.cookie.split(';');
+			for (var i = 0; i < ca.length; i++) {
+				var c = ca[i].trim();
+				if (c.indexOf(name) == 0)
+					return c.substring(name.length, c.length);
+			}
+			return "";
+		}
+	</script>
+
+</body>
+
+</html>

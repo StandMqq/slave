@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>后台登录-X-admin2.0</title>
+<meta name="renderer" content="webkit">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+<link rel="stylesheet" href="../css/font.css">
+<link rel="stylesheet" href="../css/xadmin.css">
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.0.0.min.js"></script>
+<script type="text/javascript" src="../js/jquery-3.2.1.min.js"></script>
+<script type="text/javascript" src="../lib/layui/layui.js" charset="utf-8"></script>
+<script type="text/javascript" src="../js/xadmin.js"></script>
+<script type="text/javascript" src="../js/config/config.js"></script>
+</head>
+<body>
+	<!-- 顶部开始 -->
+	<div class="container">
+		<div class="logo">
+			<a href="./index.html">车而告之</a>
+		</div>
+		<div class="left_open">
+			<i title="展开左侧栏" class="iconfont">&#xe699;</i>
+		</div>
+		<ul class="layui-nav left fast-add">
+			<li class="layui-nav-item"><a href="javascript:;"><i
+					class="iconfont">&#xe6ae;</i>&nbsp;设置</a>
+				<dl class="layui-nav-child">
+					<!-- 二级菜单 -->
+					<dd>
+						<a onclick="x_admin_show('个人信息','./usersBlock')"><i
+							class="iconfont">&#xe6b8;</i>&nbsp;个人信息</a>
+					</dd>
+					<dd>
+						<a onclick="x_admin_show('','./updatePassWord')"><i
+							class="iconfont">&#xe82b;</i>&nbsp;修改密码</a>
+					</dd>9
+					<dd>
+						<a onclick="x_admin_show('百度','http://www.baidu.com')"><i
+							class="iconfont">&#xe811;</i>&nbsp;百度</a>
+					</dd>
+				</dl></li>
+		</ul>
+		<!-- <ul class="layui-nav left fast-add">
+			<li class="layui-nav-item">暂定</li>
+		</ul> -->
+		<ul class="layui-nav right">
+			<li class="layui-nav-item"><a id="topName" href="javascript:;"></a>
+				<dl class="layui-nav-child">
+					<!-- 二级菜单 -->
+					<dd>
+						<a href="loginout"><i class="iconfont">&#xe69c;</i><cite>&nbsp;退出</cite></a>
+					</dd>
+				</dl></li>
+		</ul>
+	</div>
+	<!-- 顶部结束 -->
+	<!-- 中部开始 -->
+	<!-- 左侧菜单开始 -->
+	<div class="left-nav">
+		<div id="side-nav">
+			<ul id="nav">
+
+			</ul>
+		</div>
+	</div>
+	<!-- <div class="x-slide_left"></div> -->
+	<!-- 左侧菜单结束 -->
+	<!-- 右侧主体开始 -->
+	<div class="page-content">
+		<div class="layui-tab tab" lay-filter="xbs_tab" lay-allowclose="false">
+			<ul class="layui-tab-title">
+				<li class="layui-this"><i class="layui-icon">&#xe68e;</i>&nbsp;我的桌面</li>
+			</ul>
+			<div class="layui-tab-content">
+				<div class="layui-tab-item layui-show">
+					<iframe src='welcome' frameborder="0" scrolling="yes"
+						class="x-iframe"></iframe>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="page-content-bg"></div>
+	<!-- 右侧主体结束 -->
+	<!-- 中部结束 -->
+	<!-- 底部开始 -->
+	<div class="footer">
+		<div class="copyright">Copyright ©2017 x-admin v2.3 All Rights Reserved</div>
+	</div>
+	<!-- 底部结束 -->
+	<script>
+		var data = sessionStorage.getItem("resultResource");
+		// 动态生成侧边栏
+		/* var data = JSON.parse('{"list":[{ "name":"审核系统","children":[{ "name":"车主审核","url":"carContactList"},{ "name":"广告主审核","url":"admasterList"}]},{ "name":"查询系统","children":[{ "name":"用户查询","url":"users"}]}]}') */
+		data = JSON.parse(data)
+		var html = ""
+		if(data != null && data.length > 0){
+			$.each(
+					data,
+					function(index, cur) {
+						html += '<li><a href="javascript:;"> <i class="iconfont">'
+								+ cur.remark
+								+ '</i><cite></cite>'
+								+ cur.name
+								+ '<i class="iconfont nav_right">&#xe697;</i></a>'
+						html += '<ul class="sub-menu">';
+						$.each(
+								cur.children,
+								function(index1, cur1) {
+									html += '<li><a _href="'+api + "page/" + cur1.url +'"> <i class="iconfont">&#xe6a7;</i><cite>'
+											+ cur1.name
+											+ '</cite></a></li>'
+								})
+						html += '</ul></li>';
+					})
+		}else{
+			html += '<li><a href="#"><i class="iconfont">&#xe753;</i><cite></cite>' + '暂无权限，请联系管理员</a>' + '</li>';
+		}
+		$("#nav").html(html);
+
+		var userName = sessionStorage.getItem("adminName");
+		var accountStatus = sessionStorage.getItem("accountStatus");
+		if (accountStatus == 1) {
+			$("#accountant").show();
+		}
+		$("#topName").html(userName);
+		var x = getCookie('token');
+		if (x) {
+
+		} else {
+			top.location.href = api + "page/login";
+		}
+
+		function getCookie(cname) {
+			var name = cname + "=";
+			var ca = document.cookie.split(';');
+			for (var i = 0; i < ca.length; i++) {
+				var c = ca[i].trim();
+				if (c.indexOf(name) == 0)
+					return c.substring(name.length, c.length);
+			}
+			return "";
+		}
+	</script>
+</body>
+</html>

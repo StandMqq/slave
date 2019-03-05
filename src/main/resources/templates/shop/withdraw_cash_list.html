@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>提现记录信息</title>
+	<meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+	<link rel="stylesheet" href="../css/font.css">
+	<link rel="stylesheet" href="../css/xadmin.css">
+	<script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+	<script type="text/javascript" src="../lib/layui/layui.js" charset="utf-8"></script>
+	<script type="text/javascript" src="../js/xadmin.js"></script>
+	<script type="text/javascript" src="../js/config/config.js"></script>
+	<!-- 时间组件 -->
+	<script>
+		layui.use('laydate', function() {
+			var laydate = layui.laydate;
+			//执行一个laydate实例
+			laydate.render({
+				elem : '#startTime1', //指定元素
+				type : 'datetime'
+			});
+			laydate.render({
+				elem : '#endTime1', //指定元素
+				type : 'datetime'
+			});
+			laydate.render({
+				elem : '#startTime2', //指定元素
+				type : 'datetime'
+			});
+			laydate.render({
+				elem : '#endTime2', //指定元素
+				type : 'datetime'
+			});
+		});
+	</script>
+</head>
+
+<body>
+	<div class="x-nav">
+		<span class="layui-breadcrumb">
+		<a href="main">首页</a>
+		<a href="shopWithdrawCashList">
+			<cite>提现记录列表</cite>
+		</a>
+		</span>
+		<a class="layui-btn layui-btn-small" style="line-height: 1.6em; margin-top: 3px; float: right"
+			href="javascript:location.replace(location.href);" title="刷新">
+			<i class="layui-icon" style="line-height: 30px">ဂ</i>
+		</a>
+	</div>
+	<div class="x-body">
+		<div class="layui-tab">
+			<ul class="layui-tab-title">
+				<li class="layui-this" onclick=selectMenu(0)>未转账</li>
+				<li onclick=selectMenu(1)>已转账</li>
+				<li onclick=selectMenu(2)>失败</li>
+			</ul>
+			<div class="layui-tab-content">
+				<div class="layui-tab-item layui-show">
+					<span class="x-left" style="line-height: 40px">未转账总金额：<span id="totalMoney"></span></span>
+					<span class="x-right" style="line-height: 40px">共有数据：<span id="num"></span> 条</span>
+					<table class="layui-table">
+						<colgroup>
+							<col width="5%">
+							<col width="20%">
+							<col width="5%">
+							<col width="70%">
+						</colgroup>
+						<tbody>
+							<tr>
+								<td>
+									<button class="layui-btn queryBtn" title="0">
+										<i class="iconfont">&#xe6ac;</i> 查询
+									</button>
+								</td>
+								<td>
+									<input type="text" id="alipayAccount" placeholder="请输入支付宝账号" autocomplete="off" class="layui-input">
+								</td>
+								<td><button class="layui-btn" id="exportBtn">导&nbsp;出</button></td>
+								<td></td>
+							</tr>
+						</tbody>
+					</table>
+					<div id="content">
+						<table class="layui-table">
+							<thead>
+								<tr>
+									<th>姓名</th>
+									<th>手机号</th>
+									<th>微信名</th>
+									<th>支付宝账号</th>
+									<th>提现金额</th>
+									<th>提现状态</th>
+									<th>提现时间</th>
+									<th>操作</th>
+								</tr>
+							</thead>
+							<tbody id="listBox">
+
+							</tbody>
+						</table>
+					</div>
+					<div class="page" id="page"></div>
+				</div>
+				<div class="layui-tab-item">
+					<span class="x-left" style="line-height: 40px">已转账总金额：<span id="totalMoney1"></span></span>
+					<span class="x-right" style="line-height: 40px">共有数据：<span id="num1"></span> 条</span>
+					<table class="layui-table">
+						<colgroup>
+							<col width="5%">
+							<col width="20%">
+							<col width="40%">
+							<col width="5%">
+							<col width="30%">
+						</colgroup>
+						<tbody>
+							<tr>
+								<td>
+									<button class="layui-btn queryBtn" title="1">
+										<i class="iconfont">&#xe6ac;</i> 查询
+									</button>
+								</td>
+								<td>
+									<input type="text" id="alipayAccount1" placeholder="请输入支付宝账号" autocomplete="off" class="layui-input">
+								</td>
+								<td style="display: flex;"><label class="layui-form-label" style="width: 90px;">操作时间</label>
+									<div class="layui-input-block" style="margin-left: 30px;">
+										<input type="text" id="startTime1" name="startTime1" placeholder="开始时间" autocomplete="off" class="layui-input"/>
+									</div>
+									<div class="layui-input-block" style="margin-left: 30px;">
+										<input type="text" id="endTime1" name="endTime1" placeholder="结束时间" autocomplete="off" class="layui-input"/>
+									</div>
+								</td>
+								<td><button class="layui-btn" id="exportBtn1">导&nbsp;出</button></td>
+								<td></td>
+							</tr>
+						</tbody>
+					</table>
+					<div id="content">
+						<table class="layui-table">
+							<thead>
+								<tr>
+									<th>姓名</th>
+									<th>手机号</th>
+									<th>微信名</th>
+									<th>支付宝账号</th>
+									<th>提现金额</th>
+									<th>提现状态</th>
+									<th>提现时间</th>
+									<th>操作时间</th>
+									<th>操作</th>
+								</tr>
+							</thead>
+							<tbody id="listBox1">
+
+							</tbody>
+						</table>
+					</div>
+					<div class="page" id="page1"></div>
+				</div>
+				<div class="layui-tab-item">
+					<span class="x-left" style="line-height: 40px">失败总金额：<span id="totalMoney2"></span></span>
+					<span class="x-right" style="line-height: 40px">共有数据：<span id="num2"></span> 条
+					</span>
+					<table class="layui-table">
+						<colgroup>
+							<col width="5%">
+							<col width="20%">
+							<col width="40%">
+							<col width="5%">
+							<col width="30%">
+						</colgroup>
+						<tbody>
+							<tr>
+								<td>
+									<button class="layui-btn queryBtn" title="2">
+										<i class="iconfont">&#xe6ac;</i> 查询
+									</button>
+								</td>
+								<td>
+									<input type="text" id="alipayAccount2" placeholder="请输入支付宝账号" autocomplete="off" class="layui-input">
+								</td>
+								<td style="display: flex;"><label class="layui-form-label" style="width: 90px;">操作时间</label>
+									<div class="layui-input-block" style="margin-left: 30px;">
+										<input type="text" id="startTime2" name="startTime2" placeholder="开始时间" autocomplete="off" class="layui-input"/>
+									</div>
+									<div class="layui-input-block" style="margin-left: 30px;">
+										<input type="text" id="endTime2" name="endTime2" placeholder="结束时间" autocomplete="off" class="layui-input"/>
+									</div>
+								</td>
+								<td><button class="layui-btn" id="exportBtn2">导&nbsp;出</button></td>
+								<td></td>
+							</tr>
+						</tbody>
+					</table>
+					<div id="content">
+						<table class="layui-table">
+							<thead>
+								<tr>
+									<th>姓名</th>
+									<th>手机号</th>
+									<th>微信名</th>
+									<th>支付宝账号</th>
+									<th>提现金额</th>
+									<th>提现状态</th>
+									<th>提现时间</th>
+									<th>操作时间</th>
+									<th>备注</th>
+									<th>操作</th>
+								</tr>
+							</thead>
+							<tbody id="listBox2">
+
+							</tbody>
+						</table>
+					</div>
+					<div class="page" id="page2"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+		var ck = getCookie('token');
+		var curPage = 1;
+		var pageSize = 10;
+		var wxName;// 微信名
+		var alipayAccount;// 支付宝账号
+		var curType = 0;
+		var startTime;
+		var endTime;
+		var laypage;
+		layui.use('laypage', function() {
+			laypage = layui.laypage;
+			//执行一个laypage实例
+		});
+
+		getData(curPage,curType)
+		function getData(curPage,type) {
+			if(type==0){
+				alipayAccount = $("#alipayAccount").val();
+			}else if(type==1){
+				alipayAccount = $("#alipayAccount1").val();
+				startTime = $("#startTime1").val();
+				endTime = $("#endTime1").val();
+			}else if(type==2){
+				alipayAccount = $("#alipayAccount2").val();
+				startTime = $("#startTime2").val();
+				endTime = $("#endTime2").val();
+			}
+			
+			$.ajax({
+				headers : {
+					"token" : ck
+				},
+				dataType : 'JSON',
+				url : api + 'shopWithdrawCash/getWithdrawCashList',
+				type : 'post',
+				data : {
+					version : version,
+					curPage : curPage,
+					pageSize : pageSize,
+					payAccount : alipayAccount,
+					status: type,
+					startTime : startTime,
+					endTime : endTime
+				},
+				success : function(res) {
+					if (res.success == true) {
+						if (res.data == null) {
+							$('#listBox,#listBox1,#listBox2').html("");
+							$('#num,#num1,#num2').html(0);
+							$('#totalMoney,#totalMoney1,#totalMoney2').html(0);
+							layer.msg(res.message);
+						} else {
+							var data = res.data.list
+							var list = ''
+							for (var i = 0; i < data.length; i++) {
+
+								/* 提现状态，0 提现中，1 成功，2 失败 */
+								if (data[i].status == 0) {
+									data[i].status = "提现中";
+								} else if(data[i].status == 1) {
+									data[i].status = "成功";
+								} else if(data[i].status == 2) {
+									data[i].status = "失败";
+								} else {
+									data[i].status = "";
+								}
+								if (data[i].wxName == null) {
+									data[i].wxName = "";
+								}
+								if (data[i].alipayCount == null) {
+									data[i].alipayCount = "";
+								}
+								if (data[i].updateTime == null) {
+									data[i].updateTime = "";
+								}
+								if (data[i].remark == null) {
+									data[i].remark = "";
+								}
+								if (data[i].name == null) {
+									data[i].name = "";
+								}
+								if (data[i].phone == null) {
+									data[i].phone = "";
+								}
+								
+								var confirm0 = "";
+								var confirm1 = "";
+								var confirm2 = "";
+								if(data[i].status == "提现中"){
+									confirm0 = "<td><button class='layui-btn' onclick='confirm(" + data[i].id + ",1)'>打款成功</button><button class='layui-btn' onclick='fail(" + data[i].id + ",2)'>打款失败</button><button class='layui-btn' onclick='info(" + data[i].id + ")'>详情</button></td>";
+								}else{
+									confirm0 = "<td><button class='layui-btn' onclick='info(" + data[i].id + ")'>详情</button></td>";
+								}
+								if(data[i].status == "成功"){
+									confirm1 = "<td><button class='layui-btn' onclick='info(" + data[i].id + ")'>详情</button></td>";
+								}
+								if(data[i].status == "失败"){
+									confirm2 = "<td><button class='layui-btn' onclick='confirm(" + data[i].id + ",1)'>打款成功</button><button class='layui-btn' onclick='info(" + data[i].id + ")'>详情</button></td>";
+								}else{
+									confirm2 = "<td><button class='layui-btn' onclick='info(" + data[i].id + ")'>详情</button></td>";
+								}
+								if(type==0){
+									list += "<tr>"
+										+ "<td>" + data[i].name + "</td>"
+										+ "<td>" + data[i].phone + "</td>"
+										+ "<td>" + data[i].wxName + "</td>"
+										+ "<td>" + data[i].alipayCount + "</td>"
+										+ "<td>" + data[i].putMoney + "</td>"
+										+ "<td>" + data[i].status + "</td>"
+										+ "<td>" + data[i].createTime + "</td>"
+										+ confirm0
+										+ "</tr>"
+								}
+								if(type==1){
+									list += "<tr>"
+										+ "<td>" + data[i].name + "</td>"
+										+ "<td>" + data[i].phone + "</td>"
+										+ "<td>" + data[i].wxName + "</td>"
+										+ "<td>" + data[i].alipayCount + "</td>"
+										+ "<td>" + data[i].putMoney + "</td>"
+										+ "<td>" + data[i].status + "</td>"
+										+ "<td>" + data[i].createTime + "</td>"
+										+ "<td>" + data[i].updateTime + "</td>"
+										+ confirm1
+										+ "</tr>"
+								}
+								if(type==2){
+									list += "<tr>"
+										+ "<td>" + data[i].name + "</td>"
+										+ "<td>" + data[i].phone + "</td>"
+										+ "<td>" + data[i].wxName + "</td>"
+										+ "<td>" + data[i].alipayCount + "</td>"
+										+ "<td>" + data[i].putMoney + "</td>"
+										+ "<td>" + data[i].status + "</td>"
+										+ "<td>" + data[i].createTime + "</td>"
+										+ "<td>" + data[i].updateTime + "</td>"
+										+ "<td>" + data[i].remark + "</td>"
+										+ confirm2
+										+ "</tr>"
+								}
+							}
+							if(type==0){
+								$('#listBox').html(list);
+								$('#num').html(res.data.total);
+								$('#totalMoney').html(res.data.totalMoney);
+								laypage.render({
+									elem : 'page', //注意，这里的 test1 是 ID，不用加 # 号
+									count : res.data.total, //数据总数，从服务端得到
+									limit : pageSize,
+									curr : curPage,
+									jump : function(obj, first) {
+										if (!first) {
+											getData(obj.curr,type);
+										}
+									}
+								});
+							}else if(type==1){
+								$('#listBox1').html(list);
+								$('#num1').html(res.data.total);
+								$('#totalMoney1').html(res.data.totalMoney);
+								laypage.render({
+									elem : 'page1', //注意，这里的 test1 是 ID，不用加 # 号
+									count : res.data.total, //数据总数，从服务端得到
+									limit : pageSize,
+									curr : curPage,
+									jump : function(obj, first) {
+										if (!first) {
+											getData(obj.curr,type);
+										}
+									}
+								});
+							}else if(type==2){
+								$('#listBox2').html(list);
+								$('#num2').html(res.data.total);
+								$('#totalMoney2').html(res.data.totalMoney);
+								laypage.render({
+									elem : 'page2', //注意，这里的 test1 是 ID，不用加 # 号
+									count : res.data.total, //数据总数，从服务端得到
+									limit : pageSize,
+									curr : curPage,
+									jump : function(obj, first) {
+										if (!first) {
+											getData(obj.curr,type);
+										}
+									}
+								});
+							}
+						}
+					} else {
+						layer.open({
+							content : res.message,
+							time : 3000,
+							title : '提示',
+							anim : 1,
+							skin : 'demo-class'
+						});
+						if (res.code == 403) {
+							window.location.href = api + "page/403";
+						}
+						if (res.code == 504) {
+							top.location.href = api + "page/login";
+						}
+					}
+				},
+				error : function() {
+					layer.msg('网络错误', {
+						icon : 5,
+						time : 1500
+					});
+				},
+			})
+		}
+		
+		function confirm(id,status){
+			layer.confirm('确认操作？', function(index) {
+				$.ajax({
+					headers:{
+					 	"token": ck
+					},
+					dataType : 'JSON',
+					url : api + 'shopWithdrawCash/confirmPayMoney',
+					type : 'post',
+					data : {
+						version : version,
+						id : id,
+						status: status
+					},
+					success : function(res) {
+						layer.msg(res.message, {
+							icon : 1,
+							time : 1000
+						});
+						if (res.success == true) {
+							setTimeout(function() {
+								window.history.go(0);
+							}, 2000)
+						}else {
+							layer.open({
+			               		  content: res.message,
+			               		  time: 3000,
+			               		  title:'提示',
+			               		  anim:1,
+			               		  skin:'demo-class'
+			               	});
+							if(res.code == 403){
+								window.location.href = api + "page/403";
+							}
+							if(res.code == 504){
+								top.location.href = api + "page/login";
+							}
+						}
+					},
+					error : function() {
+						layer.msg('网络错误', {
+							icon : 5,
+							time : 1500
+						});
+					},
+				})
+			});
+       	}
+		
+		function fail(id,status) {
+			layer.prompt({
+				formType: 0,
+			  	value: '',
+			  	title: '请输入失败原因'
+			}, function(value,index){
+				$.ajax({
+					headers:{
+					 	"token": ck
+					},
+					dataType : 'JSON',
+					url : api + 'shopWithdrawCash/confirmPayMoney',
+					type : 'post',
+					data : {
+						version : version,
+						id : id,
+						status : status,
+						remark : value
+					},
+					success : function(res) {
+						layer.msg(res.message, {
+							icon : 1,
+							time : 1000
+						});
+						if (res.success == true) {
+							setTimeout(function() {
+								window.history.go(0);
+							}, 2000)
+						}else {
+							layer.open({
+			               		  content: res.message,
+			               		  time: 3000,
+			               		  title:'提示',
+			               		  anim:1,
+			               		  skin:'demo-class'
+			               	});
+							if(res.code == 403){
+								window.location.href = api + "page/403";
+							}
+							if(res.code == 504){
+								top.location.href = api + "page/login";
+							}
+						}
+					},
+					error : function() {
+						layer.msg('网络错误', {
+							icon : 5,
+							time : 1500
+						});
+					},
+				})
+			});
+		}
+
+		$(".queryBtn").click(function() {
+			getData(curPage,$(this).attr('title'));
+		})
+
+		function getCookie(cname) {
+			var name = cname + "=";
+			var ca = document.cookie.split(';');
+			for (var i = 0; i < ca.length; i++) {
+				var c = ca[i].trim();
+				if (c.indexOf(name) == 0)
+					return c.substring(name.length, c.length);
+			}
+			return "";
+		}
+		
+		function selectMenu(menu){
+	    	curPage = 1;
+	    	curType = menu;
+	    	getData(curPage,curType);
+	    }
+
+		function info(id){
+	        if(id){
+	            location.href=api+'page/shopWithdrawCashInfo?id='+id
+	        }
+	    }
+		
+		$("#exportBtn").click(function (){
+			alipayAccount = $("#alipayAccount").val();
+			window.location.href=api+'shopWithdrawCash/exportShopWithdrawCash?type=0&alipayAccount=' + alipayAccount;
+       	})
+		
+		$("#exportBtn1").click(function (){
+			alipayAccount = $("#alipayAccount1").val();
+			startTime = $("#startTime1").val();
+			endTime = $("#endTime1").val();
+			window.location.href=api+'shopWithdrawCash/exportShopWithdrawCash?type=1&alipayAccount=' + alipayAccount + '&startTime=' + startTime + '&endTime=' + endTime;
+       	})
+		
+		$("#exportBtn2").click(function (){
+			alipayAccount = $("#alipayAccount2").val();
+			startTime = $("#startTime2").val();
+			endTime = $("#endTime2").val();
+			window.location.href=api+'shopWithdrawCash/exportShopWithdrawCash?type=2&alipayAccount=' + alipayAccount + '&startTime=' + startTime + '&endTime=' + endTime;
+       	})
+	</script>
+</body>
+
+</html>

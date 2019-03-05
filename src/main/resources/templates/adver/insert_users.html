@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>录入用户</title>
+	<meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+	<link rel="stylesheet" href="../css/font.css">
+	<link rel="stylesheet" href="../css/xadmin.css">
+	<script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+	<script type="text/javascript" src="../js/qiniu.min.js"></script>
+	<script type="text/javascript" src="../lib/layui/layui.js" charset="utf-8"></script>
+	<script type="text/javascript" src="../js/xadmin.js"></script>
+	<script type="text/javascript" src="../js/config/config.js"></script>
+	<style>
+	.row-cell-class {
+		padding-top: 50px,
+	}
+	</style>
+</head>
+
+<body>
+	<div class="x-nav">
+		<span class="layui-breadcrumb"> <a href="main">首页</a> <a
+			href="users">用户列表</a> <a href="insertUsers"> <cite>录入用户</cite>
+		</a>
+		</span> <a class="layui-btn layui-btn-small"
+			style="line-height: 1.6em; margin-top: 3px; float: right"
+			href="javascript:location.replace(location.href);" title="刷新"> <i
+			class="layui-icon" style="line-height: 30px">ဂ</i></a>
+	</div>
+	<div class="x-body">
+		<div class="layui-form-item">
+			<label class="layui-form-label">用户手机号</label>
+			<div class="layui-input-block">
+				<input type="text" id="phone" required lay-verify="required"
+					placeholder="请输入用户手机号" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">密码</label>
+			<div class="layui-input-block">
+				<input type="password" id="password" placeholder="请输入密码"
+					autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">确认密码</label>
+			<div class="layui-input-block">
+				<input type="password" id="requrePassword" placeholder="请确认密码"
+					autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<div class="layui-input-block">
+				<button id="sumbit-btn" class="layui-btn" lay-submit lay-filter="*">注册</button>
+			</div>
+		</div>
+	</div>
+	<script>
+	    var token = getCookie('token');
+		if (token) {
+		}		
+	    var phone;
+	    var password;
+	    var confirmPass;
+	    
+	    function message(text) {
+	    	layer.open({
+				content : text,
+				time : 3000,
+				title : '提示',
+				anim : 1,
+				skin : 'demo-class'
+
+			});
+	    }
+	    // 提交数据事件
+		$("#sumbit-btn").click(function(){
+			phone = $("#phone").val();
+			password = $("#password").val();
+			confirmPass = $("#requrePassword").val();
+		    if (phone == "") {
+		    	message("手机号不能为空");
+		    	return;
+		    }
+		    if (password == "") {
+		    	message("密码不能为空");
+		    	return;
+		    }
+		    if (confirmPass == "") {
+		    	message("确认密码不能为空");
+		    	return;
+		    }
+		    if (!confirmPass == password) {
+		    	message("两次密码不一致");
+		    	return;
+		    } 
+		    submitData();
+		})	
+		
+		// 提交数据
+		function submitData() {	
+			$.ajax({
+				headers:{
+				 	"token": token
+				},
+				dataType : 'JSON',
+				url : api + 'backstageHandleData/regist',
+				type : 'post',
+				data : {
+					version : version,
+					userName: phone,
+					password: password,
+					secondPsw: confirmPass,			
+				},
+				success : function(res) {
+					if (res.success == true) {
+						message(res.message);
+						//window.location.href = api + "page/carList" 
+					} else {
+						message(res.message);
+					}
+
+				},
+				error : function() {
+					layer.msg('网络错误', {
+						icon : 5,
+						time : 1500
+					});
+				},
+
+			})
+		}		
+		function getCookie(cname) {
+			var name = cname + "=";
+			var ca = document.cookie.split(';');
+			for (var i = 0; i < ca.length; i++) {
+				var c = ca[i].trim();
+				if (c.indexOf(name) == 0)
+					return c.substring(name.length, c.length);
+			}
+			return "";
+		}
+	</script>
+
+</body>
+
+</html>

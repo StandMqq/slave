@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>车主黑名单信息</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="../css/font.css">
+    <link rel="stylesheet" href="../css/xadmin.css">
+    <script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript" src="../lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../js/xadmin.js"></script>
+    <script type="text/javascript" src="../js/config/config.js"></script>
+</head>
+
+<body>
+<div class="x-nav">
+		<span class="layui-breadcrumb"> <a href="main">首页</a> <a
+                href="getAuthorityList"> <cite>车主黑名单信息</cite>
+		</a>
+		</span> <a class="layui-btn layui-btn-small"
+                   style="line-height: 1.6em; margin-top: 3px; float: right"
+                   href="javascript:location.replace(location.href);" title="刷新"> <i
+        class="layui-icon" style="line-height: 30px">ဂ</i></a>
+</div>
+<div class="x-body">
+		<span id="top" class="x-right" style="line-height: 40px">共有数据：0
+			条</span>
+    <table class="layui-table">
+        <colgroup>
+            <col width="5%">
+            <col width="20%">
+            <col width="20%">
+            <col width="20%">
+            <col width="5%">
+            <col width="30%">
+        </colgroup>
+        <tbody>
+        <tr>
+            <td><button class="layui-btn" id="queryBtn">查&nbsp;询</button></td>
+            <td><input type="text" id="nameInput" placeholder="请输入车主姓名"
+                       autocomplete="off" class="layui-input"></td>
+            <td><input type="text" id="phoneInput" placeholder="请输入车主手机号"
+                       autocomplete="off" class="layui-input"></td>
+            <td><input type="text" id="plateNumberInput" placeholder="请输入车牌号"
+                       autocomplete="off" class="layui-input"></td>
+            <td></td>
+        </tr>
+        </tbody>
+    </table>
+    <div id="content">
+        <table class="layui-table">
+            <thead>
+            <tr>
+                <th>车主姓名</th>
+                <th>车主电话</th>
+                <th>车牌号</th>
+                <th>上传时间</th>
+                <th>更新时间</th>
+                <th>审核人电话</th>
+                <th>黑名单原因</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody id="body">
+
+            </tbody>
+        </table>
+    </div>
+    <div class="page" id="page"></div>
+</div>
+<script>
+    var index = 1;
+    var size = 10;
+    var total = 0;
+    var ck = getCookie('token');
+    var name;//车主名字
+    var phone;//车主电话
+    var plateNumber;//车牌号
+    var grade = 4;//黑名单等级
+    var laypage;
+    layui.use('laypage', function(){
+        laypage = layui.laypage;
+
+        //执行一个laypage实例
+
+    });
+    function getData(index, size) {
+      /*  name = $("#nameInput").val();
+        phone = $("#phoneInput").val();
+        registerPhone = $("#plateNumberInput").val();*/
+        $.ajax({
+            headers:{
+                "token": ck
+            },
+            dataType:'JSON',
+            url:api+'authority/getAuthorityList',
+            type:'post',
+            data:{
+                version:version,
+                curPage:index,
+                pageSize:size,
+                name:name,
+                phone:phone,
+                grade:grade,
+                plateNumber:plateNumber
+            },
+            success: function (res) {
+                if(res.success==true){
+                    if (res.data == null) {
+                        $("#body").html("");
+                        $("#top").html("共有数据：0条");
+                        /* layer.open({
+                             content: res.message,
+                             time: 3000,
+                             title:'提示',
+                             anim:1,
+                             skin:'demo-class'
+                           }); */
+                        layer.msg(res.message);
+                    } else {
+                        $("#top").html("共有数据："+ res.data.totalCount + "条");
+                        var html =""
+                        var data = res.data.result;
+                        $.each(data, function (index, data) {
+                            html += "<tr><td>" + data.name;
+                            html += "</td><td>" + data.beiOperatorPhone;
+                            html += "</td><td>" + data.plateNumber;
+                            html += "</td><td>" + data.createTime;
+                            html += "</td><td>" + data.updateTime;
+                            html += "</td><td>" + data.operatorPhone;
+                            html += "</td><td>" + data.remark;
+                            html += "</td><td><button class='layui-btn' onclick='relieve(" + data.id + ")'>删除</button></td>" +
+                            + "</td></tr>";
+                        });
+                        $("#body").html("");
+                        $("#body").html(html);
+                        // 分页条
+                        laypage.render({
+                            elem: 'page', //注意，这里的 test1 是 ID，不用加 # 号
+                            count: res.data.totalCount, //数据总数，从服务端得到
+                            limit: size,
+                            curr:index,
+                            jump: function(obj, first) {
+                                if (!first) {
+                                    getData(obj.curr, obj.limit);
+                                }
+                            }
+                        });
+                    }
+                }else {
+                    layer.open({
+                        content: res.message,
+                        time: 3000,
+                        title:'提示',
+                        anim:1,
+                        skin:'demo-class'
+                    });
+                    if(res.code == 403){
+                        window.location.href = api + "page/403";
+                    }
+                    if(res.code == 504){
+                        top.location.href = api + "page/login";
+                    }
+                }
+
+            },
+            error: function () {
+
+            },
+
+        })
+    }
+
+    getData(index, size);
+
+
+    function getCookie(cname)
+    {
+        var name = cname + "=";
+        var ca = document.cookie.split(';');
+        for(var i=0; i<ca.length; i++)
+        {
+            var c = ca[i].trim();
+            if (c.indexOf(name)==0) return c.substring(name.length,c.length);
+        }
+        return "";
+    }
+
+    //在黑名单中根据条件模糊查询有效且等级为4的车主列表数据
+    $("#queryBtn").click(function (){
+
+        //name = $("#nameInput").val();
+        //phone = $("#phoneInput").val();
+        //plateNumber = $("#plateNumberInput").val();
+        if($("#nameInput").val()  == null || $("#phoneInput").val() == null || $("#plateNumberInput").val()==null){
+            getData(index, size)
+        }else {
+            $.ajax({
+                headers:{
+                    "token": ck
+                },
+                dataType:'JSON',
+                url:api+'authority/getAuthorityByConditions',
+                type:'post',
+                data:{
+                    version:version,
+                    curPage:index,
+                    pageSize:size,
+                    name:$("#nameInput").val(),
+                    phone:$("#phoneInput").val(),
+                    grade:grade,
+                    plateNumber:$("#plateNumberInput").val()
+                },
+                success: function (res) {
+                    if(res.success==true){
+                        if (res.data == null) {
+                            $("#body").html("");
+                            $("#top").html("共有数据：0条");
+                            /* layer.open({
+                                 content: res.message,
+                                 time: 3000,
+                                 title:'提示',
+                                 anim:1,
+                                 skin:'demo-class'
+                               }); */
+                            layer.msg(res.message);
+                        } else {
+                            $("#top").html("共有数据："+ res.data.totalCount + "条");
+                            var html =""
+                            var data = res.data.result;
+                            $.each(data, function (index, data) {
+                                html += "<tr><td>" + data.name;
+                                html += "</td><td>" + data.beiOperatorPhone;
+                                html += "</td><td>" + data.plateNumber;
+                                html += "</td><td>" + data.createTime;
+                                html += "</td><td>" + data.updateTime;
+                                html += "</td><td>" + data.operatorPhone;
+                                html += "</td><td>" + data.remark;
+                                html += "</td><td><button class='layui-btn' onclick='relieve(" + data.id + ")'>删除</button></td>" +
+                                    + "</td></tr>";
+                            });
+                            $("#body").html("");
+                            $("#body").html(html);
+                            // 分页条
+                            laypage.render({
+                                elem: 'page', //注意，这里的 test1 是 ID，不用加 # 号
+                                count: res.data.totalCount, //数据总数，从服务端得到
+                                limit: size,
+                                curr:index,
+                                jump: function(obj, first) {
+                                    if (!first) {
+                                        getData(obj.curr, obj.limit);
+                                    }
+                                }
+                            });
+                        }
+                    }else {
+                        layer.open({
+                            content: res.message,
+                            time: 3000,
+                            title:'提示',
+                            anim:1,
+                            skin:'demo-class'
+                        });
+                        if(res.code == 403){
+                            window.location.href = api + "page/403";
+                        }
+                        if(res.code == 504){
+                            top.location.href = api + "page/login";
+                        }
+                    }
+
+                },
+                error: function () {
+
+                },
+
+            });
+        }
+
+});
+
+    //解除车主黑名单
+    function relieve(id) {
+        layer.confirm('确认移出黑名单？', function(index) {
+            $.ajax({
+                headers:{
+                    "token": ck
+                },
+                dataType : 'JSON',
+                url : api + 'authority/relieveAuthorityById',
+                type : 'post',
+                data : {
+                    version : version,
+                    id : id
+                },
+                success : function(res) {
+                    layer.msg(res.message, {
+                        icon : 1,
+                        time : 1000
+                    });
+                    if (res.success == true) {
+                        setTimeout(function() {
+                            window.history.go(0);
+                        }, 2000)
+                    }else {
+                        layer.open({
+                            content: res.message,
+                            time: 3000,
+                            title:'提示',
+                            anim:1,
+                            skin:'demo-class'
+                        });
+                        if(res.code == 403){
+                            window.location.href = api + "page/403";
+                        }
+                        if(res.code == 504){
+                            top.location.href = api + "page/login";
+                        }
+                    }
+                },
+                error : function() {
+                    layer.msg('网络错误', {
+                        icon : 5,
+                        time : 1500
+                    });
+                },
+            })
+        });
+    }
+
+</script>
+
+</body>
+
+</html>

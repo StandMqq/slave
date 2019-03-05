@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+  
+  <head>
+    <meta charset="UTF-8">
+    <title>红包详情</title>
+	<meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+	<script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+	<link rel="stylesheet" href="../css/font.css">
+	<link rel="stylesheet" href="../css/xadmin.css">
+	<script type="text/javascript" src="../js/xadmin.js"></script>
+	<script src="../lib/layui/layui.js" charset="utf-8"></script>
+	<script src="../js/config/config.js"></script>
+    <style>
+    	.row-cell-class{
+    		padding-top: 50px,    		
+    	}
+    </style>
+  </head>
+  
+<body>
+    <div class="x-nav">
+      <span class="layui-breadcrumb">
+        <a href="main">首页</a>
+        <a href="advertisements">广告列表</a>
+        <a href="#">
+          <cite>红包详情</cite>
+        </a>
+      </span>
+      <a class="layui-btn layui-btn-small" style="line-height: 1.6em; margin-top: 3px; float: right" href="javascript:location.replace(location.href);" title="刷新"> 
+			<i class="layui-icon" style="line-height: 30px">ဂ</i></a>
+    </div>
+    <div class="x-body">
+
+      <span class="x-left" style="line-height:10px">企业红包：<span id="redPacketQY"></span></span>
+      &emsp;&emsp;&emsp;&emsp;&emsp;
+      <span class="x-left" style="line-height:40px">商家红包：<span id="redPacketSJ"></span></span>
+      <span class="x-right" style="line-height:40px">共有数据：<span id="num"></span>条</span>
+	  <!-- <table class="layui-table">
+		  <colgroup>
+		    <col width="5%">
+		    <col width="20%">
+		    <col width="50%">
+		    <col>
+		  </colgroup>
+		  <tbody>
+		    <tr>
+		      <td><button class="layui-btn" id="queryBtn">查&nbsp;询</button></td>
+		      <td><input type="text" id="nameInput" placeholder="请输入名称" autocomplete="off" class="layui-input"></td>
+		      <td></td>
+		    </tr>
+		  </tbody>
+	  </table> -->
+      <table class="layui-table">
+        <thead>
+          <tr>
+			<th>微信昵称</th>
+			<th>类别</th>
+			<th>领取时间</th>
+			<th>领取金额</th>
+			<th>转账账号（支付宝）</th>
+			<th>操作</th>
+        </thead>
+        <tbody id="listBox">
+
+        </tbody>
+      </table>
+      <div class="page" id="page">
+
+      </div>
+    </div>
+    <script>
+	    var ck = getCookie('token');
+	    var curPage=1;
+	    var pageSize=10;
+    
+	    var curWwwPath = window.document.location.href;
+        var idParam= curWwwPath.split("?")[1];
+        var advertisementId = idParam.split("=")[1];
+	    
+	    var laypage;
+	    layui.use('laypage', function(){
+	        laypage = layui.laypage;
+	        //执行一个laypage实例
+	    });
+	    getData(curPage)
+	    function getData(curPage){
+	   	name = $("#nameInput").val();
+	    $.ajax({
+	    	headers:{
+			 	"token": ck
+			},
+	        dataType:'JSON',
+	        url:api+'redPacket/getUserReceiveRedPacketListByAdverId',
+	        type:'post',
+	        data:{
+	            version:version,
+				curPage:curPage,
+				pageSize:pageSize,
+				advertisementId: advertisementId
+	            },
+	        success: function (res) {
+				if(res.success==true){
+					if(res.data==null){
+						$('#listBox').html("");
+						$('#num').html(0);
+						laypage.render({
+		                    elem: 'page', //注意，这里的 test1 是 ID，不用加 # 号
+		                    count: 0, //数据总数，从服务端得到
+		                });
+    					layer.msg(res.message);
+					}else{
+						var data=res.data.resultList;
+		                var list='';
+		                var alreadyMakeMoney;
+						for(var i=0;i<data.length;i++){
+							if(data[i].wxName == null || data[i].wxName == 'null'){
+								data[i].wxName = '';
+							}
+							/* 红包类型，1 企业红包，2 手动红包 */
+							if(data[i].type == 1){
+								data[i].type = '企业红包';
+							}else if(data[i].type == 2){
+								data[i].type = '商家红包';
+							}
+							if(data[i].status == 0){
+								alreadyMakeMoney = "<td><button class='layui-btn' onclick='alreadyMakeMoney("+data[i].id+")'>已打款</button></td>"
+							}else{
+								alreadyMakeMoney = "<td></td>"
+							}
+							list+=
+							"<tr>"+
+							"<td>"+data[i].wxName+"</td>"+
+							"<td>"+data[i].type+"</td>"+
+							"<td>"+data[i].createTime+"</td>"+
+							"<td>"+data[i].money+"</td>"+
+							"<td>"+data[i].payAccount+"</td>"+
+							alreadyMakeMoney+
+							"</tr>"
+						}
+		                $('#listBox').html(list)
+						$('#num').html(res.data.totalCount)
+						$('#redPacketQY').html(res.data.redPacketQY)
+						$('#redPacketSJ').html(res.data.redPacketSJ)
+	
+						laypage.render({
+		                    elem: 'page', //注意，这里的 test1 是 ID，不用加 # 号
+		                    count: res.data.totalCount, //数据总数，从服务端得到
+		                    limit: pageSize,
+		                    curr:curPage,
+		                    jump: function(obj, first) {
+		                        if (!first) {
+		                            getData(obj.curr);
+		                        }
+		                    }
+		                });
+					}
+				} else {
+					layer.open({
+	               		  content: res.message,
+	               		  time: 3000,
+	               		  title:'提示',
+	               		  anim:1,
+	               		  skin:'demo-class'
+	               	});
+					if(res.code == 403){
+						window.location.href = api + "page/403";
+					}
+					if(res.code == 504){
+						top.location.href = api + "page/login";
+					}
+				}
+	        },
+	        error: function () {
+	        },
+	    })
+	    }
+	    
+	    function alreadyMakeMoney(id) {
+
+			layer.confirm('确认已打款？ 确认后打款按钮消失', function(index) {
+				$.ajax({
+					headers:{
+					 	"token": ck
+					},
+					dataType : 'JSON',
+					url : api + 'redPacket/financePayConfirm',
+					type : 'post',
+					data : {
+						version : version,
+						id : id
+					},
+					success : function(res) {
+						layer.msg(res.message, {
+							icon : 1,
+							time : 1500
+						});
+						if (res.success == true) {
+							setTimeout(function() {
+								window.history.go(-1);
+							}, 2000)
+						} else {
+							layer.open({
+			               		  content: res.message,
+			               		  time: 3000,
+			               		  title:'提示',
+			               		  anim:1,
+			               		  skin:'demo-class'
+			               	});
+							if(res.code == 403){
+								window.location.href = api + "page/403";
+							}
+							if(res.code == 504){
+								top.location.href = api + "page/login";
+							}
+						}
+					},
+					error : function() {
+						layer.msg('网络错误', {
+							icon : 5,
+							time : 1500
+						});
+					},
+				})
+			});
+		}
+	
+	    function getCookie(cname)
+	    {
+	        var name = cname + "=";
+	        var ca = document.cookie.split(';');
+	        for(var i=0; i<ca.length; i++)
+	        {
+	            var c = ca[i].trim();
+	            if (c.indexOf(name)==0) return c.substring(name.length,c.length);
+	        }
+	        return "";
+	    }
+	    
+	    $("#queryBtn").click(function (){
+	    	getData(curPage);
+	    })
+    </script>
+  </body>
+
+</html>

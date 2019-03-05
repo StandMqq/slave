@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>录入积分商品</title>
+	<meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+	<link rel="stylesheet" href="../css/font.css">
+	<link rel="stylesheet" href="../css/xadmin.css">
+	<script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+	<script type="text/javascript" src="../js/qiniu.min.js"></script>
+	<script type="text/javascript" src="../lib/layui/layui.js" charset="utf-8"></script>
+	<script type="text/javascript" src="../js/xadmin.js"></script>
+	<script type="text/javascript" src="../js/config/config.js"></script>
+	<style>
+	.row-cell-class {
+		padding-top: 50px,
+	}
+	</style>
+	
+	<!-- 时间组件 -->
+	<script>
+		layui.use('laydate', function(){
+			var laydate = layui.laydate;
+			//执行一个laydate实例
+			laydate.render({
+				elem: '#startTime', //指定元素
+				type: 'datetime'
+			});
+			laydate.render({
+				elem: '#endTime', //指定元素
+				type: 'datetime'
+			});
+		});
+	</script>
+</head>
+
+<body>
+	<div class="x-nav">
+		<span class="layui-breadcrumb">
+			<a href="main">首页</a>
+			<a href="integralGoodList">积分商品列表</a>
+			<a href="#"><cite>录入积分商品/详情</cite></a>
+		</span>
+		<a class="layui-btn layui-btn-small" style="line-height: 1.6em; margin-top: 3px; float: right"
+			href="javascript:location.replace(location.href);" title="刷新">
+			<i class="layui-icon" style="line-height: 30px">ဂ</i>
+		</a>
+	</div>
+	<div class="x-body">
+		<div class="layui-form-item">
+			<label class="layui-form-label">商品名称</label>
+			<div class="layui-input-block">
+				<input type="text" id="name" name="name" placeholder="请输入商品名称" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">所需积分</label>
+			<div class="layui-input-block">
+				<input type="text" id="integral" name="integral" placeholder="请输入兑换所需积分" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">发放数量</label>
+			<div class="layui-input-block">
+				<input type="text" id="total" name="total"
+					placeholder="请输入发放数量" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">商品图片</label>
+			<div class="layui-input-block">
+				<input type="file" id="images" name="images"
+					autocomplete="off" class="layui-input" onchange="imageShow(this)">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<div class="layui-input-block">
+				<button id="sumbit-btn" class="layui-btn">立即提交</button>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		var index = 1;
+		var size = 1;
+		var total = 0;
+		var token = getCookie('token');
+		var name;
+		var integral;
+		var total;
+		
+		var laypage;
+	    layui.use('laypage', function(){
+	        laypage = layui.laypage;
+	        //执行一个laypage实例
+	    });
+		
+		var tag = sessionStorage.getItem("tag");
+		if(tag != null && tag != ""){
+			if(tag == "info"){
+				$("#name").attr("readOnly",true);
+				$("#integral").attr("readOnly",true);
+				$("#total").attr("readOnly",true);
+				$("#images").attr("readOnly",true);
+				$("#images").attr("style","display:none;");
+				$("#sumbit-btn").attr("disabled",true);
+				$("#sumbit-btn").attr("style","display:none;");
+			}else if(tag == "edit"){
+				$("#name").attr("readOnly",true);
+			}
+		}
+		
+		var curWwwPath = window.document.location.href;
+		var idParam = curWwwPath.split("?")[1];
+		var id;
+		if(idParam != "" && idParam != null){
+			id = idParam.split("=")[1];
+		}
+
+		var updateStatus = false;
+		if(id != null && id != ''){
+			updateStatus = true;
+		}
+		
+		// 获取数据
+		function getData() {
+			$.ajax({
+				headers:{
+				 	"token": token
+				},
+				dataType : 'JSON',
+				url : api + 'integralGoods/getIntegralGoodsById',
+				type : 'post',
+				data : {
+					id : id,
+					version : version,
+				},
+				success : function(res) {
+					if (res.success == true) {
+						if (res.data == null) {
+							layer.open({
+								content : res.message,
+								time : 3000,
+								title : '提示',
+								anim : 1,
+								skin : 'demo-class'
+							});
+						} else {
+							var data = res.data;
+							id = data.id;
+							businessId = data.businessId;
+							typeId = data.typeId;
+							$("#name").val(data.name);
+							$("#integral").val(data.integral);
+							$("#total").val(data.total);
+							$("#images").after('<img style="width: 200px;" src="' + data.images + '" />');
+						}
+					} else {
+						layer.open({
+							content : res.message,
+							time : 3000,
+							title : '提示',
+							anim : 1,
+							skin : 'demo-class'
+						});
+						if(res.code == 403){
+							window.location.href = api + "page/403";
+						}
+						if(res.code == 504){
+							top.location.href = api + "page/login";
+						}
+					}
+				},
+				error : function() {
+					layer.msg('网络错误', {
+						icon : 5,
+						time : 1500
+					});
+				},
+			})
+		}
+		
+		if(id != null && id != ''){
+			// 获取数据
+			getData();
+		}
+		
+	    // 提交数据校验
+		$("#sumbit-btn").click(function(){
+			name = $("#name").val();
+			integral = $("#integral").val();
+			total = $("#total").val();
+			
+		    if (name == "") {
+		    	message("商品名称不能为空");return;
+		    }
+		    if (integral == "") {
+		    	message("所需积分不能为空");return;
+		    }
+		    if (total == "") {
+		    	message("发放数量不能为空");return;
+		    }
+		    getToken();
+		})
+		
+		function message(text) {
+	    	layer.open({
+				content : text,
+				time : 3000,
+				title : '提示',
+				anim : 1,
+				skin : 'demo-class'
+			});
+	    }
+		
+		// 提交数据
+		function submitData(key) {
+			$.ajax({
+				headers:{
+				 	"token": token
+				},
+				dataType : 'JSON',
+				url : api + 'integralGoods/insertIntegralGoods',
+				type : 'post',
+				data : {
+					version : version,
+					id: id,
+					name: name,
+					integral: integral,
+					total: total,
+					images: key,
+				},
+				success : function(res) {
+					if (res.success == true) {
+						layer.msg(res.message, {
+						  time : 0, //不自动关闭
+						  title : '提示',
+						  anim : 1,
+						  skin : 'demo-class',
+						  btn : ['确定'],
+						  yes : function(index){
+							layer.close(index);
+							location.href=api+'page/integralGoodList'
+						  }
+						});
+					} else {
+						layer.open({
+							content : res.message,
+							time : 3000,
+							title : '提示',
+							anim : 1,
+							skin : 'demo-class'
+						});
+						if(res.code == 403){
+							window.location.href = api + "page/403";
+						}
+						if(res.code == 504){
+							top.location.href = api + "page/login";
+						}
+					}
+				},
+				error : function() {
+					layer.msg('网络错误', {
+						icon : 5,
+						time : 1500
+					});
+				},
+			})
+		}
+		
+
+		function getCookie(cname) {
+			var name = cname + "=";
+			var ca = document.cookie.split(';');
+			for (var i = 0; i < ca.length; i++) {
+				var c = ca[i].trim();
+				if (c.indexOf(name) == 0)
+					return c.substring(name.length, c.length);
+			}
+			return "";
+		}
+		
+		// 获取key
+	    function getKey() {
+	    	var files = $('input[name="images"]').prop('files');
+	    	var dir = "good/";
+			var end = files[0].name.split('.').splice(-1);
+			var key =  dir + "cegz"+ guid() + "." + end;
+	    	return key;
+	    }
+		
+	  	//用于生成uuid
+	    function guid() {
+	        return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+	    }
+	    function S4() {
+	        return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+	    }
+		
+		// 校验图片大小
+	    function checkFile() {
+	    	var files = $('input[name="images"]').prop('files');
+			if (files.length == 0 && !updateStatus) {
+				layer.open({
+					content : '请选择文件',
+					time : 3000,
+					title : '提示',
+					anim : 1,
+					skin : 'demo-class'
+				});
+				return false;
+			}
+			if (files.length > 0){
+		    	var size = files[0].size / 1024;
+		    	if (size > 1024) {
+		    		layer.open({
+						content : '图片大小不能超过1M',
+						time : 3000,
+						title : '提示',
+						anim : 1,
+						skin : 'demo-class'
+	
+					});
+		    		return false
+		    	}
+			}
+	    	return true
+	    }
+		
+	 	// 获取token
+		function getToken(){
+			$.ajax({
+				headers:{
+				 	"token": token
+				},
+				dataType : 'JSON',
+				url : api + 'auth/getUpToken',
+				type : 'post',
+				data : {
+					version : version,
+				},
+				success : function(res) {
+					if (res.success) {
+						var token = res.data;
+						var files = $('input[name="images"]').prop('files');
+						// 校验图片
+						if (checkFile()) {
+							if(files.length > 0){
+								key = getKey();					
+								// 上传图片
+								uploadImage(files[0], token, key);							
+							}else{
+								submitData();
+							}
+						}						
+					} else {
+						layer.open({
+		               		  content: res.message,
+		               		  time: 3000,
+		               		  title:'提示',
+		               		  anim:1,
+		               		  skin:'demo-class'
+		               	});
+						if(res.code == 403){
+							window.location.href = api + "page/403";
+						}
+						if(res.code == 504){
+							top.location.href = api + "page/login";
+						}
+					}
+				}
+			});
+		}
+	 	
+		// 上传图片
+		// 上传配置
+		var config = {
+			useCdnDomain: true,
+			region: qiniu.region.z0
+		}
+		// 上传回调
+		var observer = {
+			next(res){
+			},
+			error(err){
+			}, 
+			complete(res){
+			  submitData(key)
+			}
+		}
+		// 上传设置
+		var putExtra = {
+				  fname: "",
+				  params: {},
+				  mimeType:["image/png", "image/jpeg", "image/gif"]
+				};
+		function uploadImage(file, token, key, call) {			
+			// 上传开始
+			var observable = qiniu.upload(file, key, token, putExtra, config);
+		    var subscription = observable.subscribe(observer) 
+		}
+
+		function imageShow(v){
+			var reader = new FileReader();
+			reader.onload = function (evt) {
+				if($(v).parent().children().length == 1){
+					$(v).after('<img style="width: 200px;" src="' + evt.target.result + '" />');
+				}else{
+					$(v).parent().find('img').attr('src',evt.target.result);
+				}
+			}
+			reader.readAsDataURL(v.files[0]);
+		}
+	 	
+	</script>
+
+</body>
+
+</html>

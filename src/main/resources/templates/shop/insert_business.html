@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<title>录入商户</title>
+<meta name="renderer" content="webkit">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+<link rel="stylesheet" href="../css/font.css">
+<link rel="stylesheet" href="../css/xadmin.css">
+<script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+<script type="text/javascript" src="../js/qiniu.min.js"></script>
+<script type="text/javascript" src="../lib/layui/layui.js" charset="utf-8"></script>
+<script type="text/javascript" src="../js/xadmin.js"></script>
+<script type="text/javascript" src="../js/config/config.js"></script>
+<style>
+.row-cell-class {
+	padding-top: 50px,
+}
+</style>
+
+<!-- 经纬度拾取器 start -->
+<!-- <script type="text/javascript" src="http://webapi.amap.com/maps?v=1.3&key=YOUKEY"></script> -->
+<script type="text/javascript" src="https://webapi.amap.com/maps?v=1.3&key=1987fd366e54f5370fbe29b04ef07fb2"></script>
+<script type="text/javascript" src="https://cache.amap.com/lbs/static/addToolbar.js"></script>
+<style>
+#iMap {
+	height: 500px;
+	width: 600px;
+	float: left;
+}
+
+.info {
+	float: left;
+	margin: 0 0 0 10px;
+}
+
+label {
+	width: 80px;
+	float: left;
+}
+
+.detail {
+	padding: 10px;
+	border: 1px solid #aaccaa;
+}
+</style>
+<!-- 经纬度拾取器 end -->
+
+</head>
+
+<body onload="mapInit()">
+	<div class="x-nav">
+		<span class="layui-breadcrumb"> <a href="main">首页</a> <a
+			href="businessList">商户列表</a> <a href="#"><cite>录入商户</cite></a>
+		</span> <a class="layui-btn layui-btn-small"
+			style="line-height: 1.6em; margin-top: 3px; float: right"
+			href="javascript:location.replace(location.href);" title="刷新"> <i
+			class="layui-icon" style="line-height: 30px">ဂ</i>
+		</a>
+	</div>
+	<div class="x-body">
+		<div class="layui-form-item">
+			<label class="layui-form-label">商户名称</label>
+			<div class="layui-input-block">
+				<input type="text" id="name" name="name" placeholder="请输入商户名称"
+					autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">电话</label>
+			<div class="layui-input-block">
+				<input type="text" id="phone" name="phone" placeholder="请输入电话"
+					autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">地址</label>
+			<div class="layui-input-block">
+				<input type="text" id="address" name="address" placeholder="请输入地址"
+					autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">详细地址</label>
+			<div class="layui-input-block">
+				<input type="text" id="addressDetail" name="addressDetail"
+					placeholder="请输入详细地址" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<!-- <div class="layui-form-item">
+			<label class="layui-form-label">编号</label>
+			<div class="layui-input-block">
+				<input type="text" id="businessNo" name="businessNo" placeholder="请输入编号" autocomplete="off" class="layui-input">
+			</div>
+		</div> -->
+		<div class="layui-form-item">
+			<label class="layui-form-label">经纬度</label>
+			<div class="layui-input-block">
+				<input type="text" id="lng" name="lng" readonly="readonly"
+					placeholder="点击下方地图拾取坐标经度" autocomplete="off" class="layui-input">
+				<input type="text" id="lat" name="lat" readonly="readonly"
+					placeholder="点击下方地图拾取坐标纬度" autocomplete="off" class="layui-input">
+				<br>
+				<p>说明：</p>
+				<p>1、鼠标滚轮可以缩放地图，拖动地图。</p>
+				<p>2、点击地图，即可获得GCJ-02的经纬度坐标，即火星坐标。</p>
+				<br> <input type="text" id="tipinput" placeholder="输入地址搜索"
+					style="width: 20%" class="layui-input">
+			</div>
+		</div>
+
+		<!-- <body onload="mapInit()"> -->
+		<div class="layui-form-item image2-class" id="iMap"
+			style="width: 90%; margin-left: 110px;"></div>
+		<!-- <div class="info">
+		        <h1>坐标拾取工具（GCJ-02坐标）</h1>
+		        <p>说明：</p>
+		        <p>1、鼠标滚轮可以缩放地图，拖动地图。</p>
+		        <p>2、点击地图，即可获得GCJ-02的经纬度坐标，即火星坐标。</p>
+			    <!-- <div class="detail">
+			        <p>
+			            <span id="lnglat">&nbsp;</span>
+			        </p>
+			        <p>
+			            <span id="iAddress">&nbsp;</span>
+			        </p>
+			    </div>
+			</div> -->
+		<!-- </body> -->
+
+		<div id="threeBlock1" class="layui-form-item image2-class">
+			<label class="layui-form-label">轮播图片1</label>
+			<div class="layui-input-block">
+				<input type="file" id="image1" name="filetrans1" autocomplete="off"
+					onchange="checkLastPic(1),imageShow(this)" class="layui-input">
+			</div>
+		</div>
+		<div id="threeBlock2" class="layui-form-item image2-class">
+			<label class="layui-form-label">轮播图片2</label>
+			<div class="layui-input-block">
+				<input type="file" id="image2" name="filetrans2" autocomplete="off"
+					disabled="disabled" onchange="checkLastPic(2),imageShow(this)"
+					class="layui-input">
+			</div>
+		</div>
+		<div id="threeBlock3" class="layui-form-item image2-class">
+			<label class="layui-form-label">轮播图片3</label>
+			<div class="layui-input-block">
+				<input type="file" id="image3" name="filetrans3" autocomplete="off"
+					disabled="disabled" onchange="checkLastPic(3),imageShow(this)"
+					class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<div class="layui-input-block">
+				<button id="sumbit-btn" class="layui-btn">立即提交</button>
+			</div>
+		</div>
+	</div>
+	<script>
+		var index = 1;
+		var size = 1;
+		var total = 0;
+		var token = getCookie('token');
+		var name;
+		var phone;
+		var address;
+		var addressDetail;
+		/* var businessNo; */
+		var lng;
+		var lat;
+		
+		var files = [];
+		var upToken;
+		var firstKey;
+		var secondKey;
+		var threeKey;
+		var proccessStatus = 0;
+		var oldPictures = [];
+		var updateStatus = false;
+		var curWwwPath = window.document.location.href;
+		var idParam = curWwwPath.split("?")[1];
+		var id;
+		if(idParam != "" && idParam != null){
+			id = idParam.split("=")[1];
+		}
+		if(id != null && id != ''){
+			updateStatus = true;
+		}
+		var submitStatus = 0;
+		// 获取数据
+		function getData() {
+			$.ajax({
+				headers:{
+				 	"token": token
+				},
+				dataType : 'JSON',
+				url : api + 'business/getBusinessById',
+				type : 'post',
+				data : {
+					id : id,
+					version : version,
+				},
+				success : function(res) {
+					if (res.success == true) {
+						if (res.data == null) {
+							layer.open({
+								content : res.message,
+								time : 3000,
+								title : '提示',
+								anim : 1,
+								skin : 'demo-class'
+
+							});
+						} else {
+							var data = res.data
+							id = data.id;
+							$("#name").val(data.name);
+							$("#phone").val(data.phone);
+							$("#address").val(data.address);
+							$("#addressDetail").val(data.addressDetail);
+							/* $("#businessNo").val(data.businessNo); */
+							$("#lng").val(data.lng);
+							$("#lat").val(data.lat);
+							
+							var pictureUrls = data.pictureUrls;
+							if(pictureUrls != null){
+								var array = pictureUrls.split(",");
+								if(array.length>0){
+									for(var i=0;i< array.length;i++){
+										oldPictures[i] = "null";
+										if(i == 0){
+											//$("#image1").attr("value",array[0]);
+											$("#image1").after('<img style="width: 200px;" src="' + array[0] + '" />');
+										}
+										if(i == 1){
+											//$("#image2").attr("value",array[1]);
+											$("#image2").after('<img style="width: 200px;" src="' + array[1] + '" />');
+										}
+										if(i == 2){
+											//$("#image3").attr("value",array[2]);
+											$("#image3").after('<img style="width: 200px;" src="' + array[2] + '" />');
+										}
+									}
+								}
+							}
+						}
+					} else {
+						layer.open({
+							content : res.message,
+							time : 3000,
+							title : '提示',
+							anim : 1,
+							skin : 'demo-class'
+						});
+						if(res.code == 403){
+							window.location.href = api + "page/403";
+						}
+						if(res.code == 504){
+							top.location.href = api + "page/login";
+						}
+					}
+				},
+				error : function() {
+					layer.msg('网络错误', {
+						icon : 5,
+						time : 1500
+					});
+				},
+			})
+		}
+		if(updateStatus){
+			// 获取数据
+			getData();
+			$('#image1').attr("disabled",false);
+			$('#image2').attr("disabled",false);
+			$('#image3').attr("disabled",false);
+		}
+		
+	    // 提交数据校验
+		$("#sumbit-btn").click(function(){
+			name = $("#name").val();
+			phone = $("#phone").val();
+			address = $("#address").val();
+			addressDetail = $("#addressDetail").val();
+			/* businessNo = $("#businessNo").val(); */
+			lng = $("#lng").val();
+			lat = $("#lat").val();
+		    
+		    if (name == "") {
+		    	message("商户名称不能为空");return;
+		    }
+		    if (phone == "") {
+		    	message("电话不能为空");return;
+		    }
+		    if (address == "") {
+		    	message("地址不能为空");return;
+		    }
+		    if (addressDetail == "") {
+		    	message("详细地址不能为空");return;
+		    }
+		    /* if (businessNo == "") {
+		    	message("商店编号不能为空");return;
+		    } */
+		    if (lng == "" || lat == "") {
+		    	message("经纬度不能为空");return;
+		    }
+		    if (updateStatus) {
+		    	var filetrans1 = $('input[name="filetrans1"]').prop('files')[0];
+			    if(filetrans1 != null && filetrans1 != ''){
+			    	files[0] =  filetrans1;
+			    }
+			    var filetrans2 = $('input[name="filetrans2"]').prop('files')[0];
+			    if(filetrans2 != null && filetrans2 != ''){
+			    	files[files.length] =  filetrans2;
+			    }
+			    var filetrans3 = $('input[name="filetrans3"]').prop('files')[0];
+			    if(filetrans3 != null && filetrans3 != ''){
+			    	files[files.length] =  filetrans3;
+			    }
+		    	if (!checkFileSize(files)) {
+					return;
+				};
+				if (files.length > 0) {
+					// 获取uptoken 启动上传
+					getToken();
+				} else {
+					submitData()
+				}
+				
+		    } else {
+		    	var filetrans1 = $('input[name="filetrans1"]').prop('files')[0];
+			    if(filetrans1 != null && filetrans1 != ''){
+			    	files[0] =  filetrans1;
+			    }
+			    var filetrans2 = $('input[name="filetrans2"]').prop('files')[0];
+			    if(filetrans2 != null && filetrans2 != ''){
+			    	files[1] =  filetrans2;
+			    }
+			    var filetrans3 = $('input[name="filetrans3"]').prop('files')[0];
+			    if(filetrans3 != null && filetrans3 != ''){
+			    	files[2] =  filetrans3;
+			    }
+		    	if (!checkFileSize(files)) {
+					return;
+				};
+				// 获取uptoken 启动上传
+				getToken();
+		    }
+		})
+		
+		function message(text) {
+	    	layer.open({
+				content : text,
+				time : 3000,
+				title : '提示',
+				anim : 1,
+				skin : 'demo-class'
+			});
+	    }
+		
+		// 提交数据
+		function submitData() {
+			var pictureUrls = "";
+			if (updateStatus) {
+				for (var i = 0;i < oldPictures.length; i++) {
+					pictureUrls += oldPictures[i];
+					if (i != oldPictures.length - 1) {
+						pictureUrls += ",";
+					}				
+					split = ",";	
+				}
+			} else {
+				if (firstKey != null && firstKey != '') {
+		    		pictureUrls = firstKey;
+		    	}
+		    	if (secondKey != null && secondKey != '') {
+		    		pictureUrls = firstKey + "," + secondKey;
+		    	}
+		    	if (threeKey != null && threeKey != '') {
+		    		pictureUrls = firstKey + "," + secondKey + "," + threeKey;
+		    	}
+			}
+	    	
+			$.ajax({
+				headers:{
+				 	"token": token
+				},
+				dataType : 'JSON',
+				url : api + 'business/insertBusiness',
+				type : 'post',
+				data : {
+					version : version,
+					id: id,
+					name: name,
+					phone: phone,
+					address, address,
+					addressDetail, addressDetail,
+					/* businessNo, businessNo, */
+					lng, lng,
+					lat, lat,
+					pictureUrls, pictureUrls
+				},
+				success : function(res) {
+					if (res.success == true) {
+						layer.msg(res.message, {
+						  time : 0, //不自动关闭
+						  title : '提示',
+						  anim : 1,
+						  skin : 'demo-class',
+						  btn : ['确定'],
+						  yes : function(index){
+						    layer.close(index);
+						    location.href=api+'page/businessList';
+						  }
+						});
+					} else {
+						layer.open({
+							content : res.message,
+							time : 3000,
+							title : '提示',
+							anim : 1,
+							skin : 'demo-class'
+						});
+						if(res.code == 403){
+							window.location.href = api + "page/403";
+						}
+						if(res.code == 504){
+							top.location.href = api + "page/login";
+						}
+					}
+				},
+				error : function() {
+					layer.msg('网络错误', {
+						icon : 5,
+						time : 1500
+					});
+				},
+			})
+		}
+		
+		function getCookie(cname) {
+			var name = cname + "=";
+			var ca = document.cookie.split(';');
+			for (var i = 0; i < ca.length; i++) {
+				var c = ca[i].trim();
+				if (c.indexOf(name) == 0)
+					return c.substring(name.length, c.length);
+			}
+			return "";
+		}
+	</script>
+
+	<!-- 经纬度拾取器 start -->
+	<script>
+        var mapObj;
+        var lnglatXY;
+        //初始化地图
+        function mapInit() {
+            var opt = {
+                level: 10, //设置地图缩放级别
+                center: new AMap.LngLat(104.044412,30.571591) //设置地图中心点
+            }
+            mapObj = new AMap.Map("iMap", opt);
+            AMap.event.addListener(mapObj, 'click', getLnglat); //点击事件
+            autocomplete();
+        }
+        function geocoder() {
+            var MGeocoder;
+            //加载地理编码插件
+            mapObj.plugin(["AMap.Geocoder"], function () {
+                MGeocoder = new AMap.Geocoder({
+                    radius: 1000,
+                    extensions: "all"
+                });
+                //返回地理编码结果
+                AMap.event.addListener(MGeocoder, "complete", geocoder_CallBack);
+                //逆地理编码
+                MGeocoder.getAddress(lnglatXY);
+            });
+            //加点
+            var marker = new AMap.Marker({
+                map: mapObj,
+                icon: new AMap.Icon({
+                    /* image: " http://api.amap.com/Public/images/js/mark.png" , */
+                    size: new AMap.Size(58, 30),
+                    imageOffset: new AMap.Pixel(-32, -0)
+                }),
+                position: lnglatXY,
+                offset: new AMap.Pixel(-5, -30)
+            });
+            // mapObj.setFitView();
+        }
+        //回调函数
+        function geocoder_CallBack(data) {
+            var address;
+            //返回地址描述
+            address = data.regeocode.formattedAddress;
+            //返回结果拼接输出
+            /* document.getElementById("iAddress").innerHTML = address; */
+        }
+        //鼠标点击，获取经纬度坐标
+        function getLnglat(e) {
+            mapObj.clearMap();
+            var x = e.lnglat.getLng();
+            var y = e.lnglat.getLat();
+            /* document.getElementById("lnglat").innerHTML = x + "," + y; */
+            lnglatXY = new AMap.LngLat(x, y);
+            /* $("#position").val(x + "," + y); */
+            $("#lng").val(x);
+            $("#lat").val(y);
+            geocoder();
+        }
+     	// 输入关键字搜索
+        function autocomplete() {
+            AMap.plugin(['AMap.Autocomplete','AMap.PlaceSearch'],function(){
+                var autoOptions = {
+                    input: "tipinput"//input框id
+                };
+                autocomplete= new AMap.Autocomplete(autoOptions);
+                var placeSearch = new AMap.PlaceSearch({
+                    map:mapObj
+                })
+                AMap.event.addListener(autocomplete, "select", function(e){
+                    placeSearch.setCity(e.poi.adcode);
+                    placeSearch.search(e.poi.name)
+                    AMap.event.addListener(placeSearch, "markerClick", function(e){
+                        var x = e.data.location.lng;
+                        var y = e.data.location.lat;
+                        /* $("#position").val(x + "," + y); */
+                        $("#lng").val(x);
+                        $("#lat").val(y);
+                    })
+                });
+            });
+        }
+        
+    </script>
+	<!-- 经纬度拾取器 end -->
+
+	<!-- 图片上传 start -->
+	<script>
+		// 按照顺序添加图片
+		function checkLastPic(num){
+			
+			// 修改信息
+			if (updateStatus) {
+				var picIndex = num - 1;
+				oldPictures[picIndex ] = true;
+				
+			
+			} else {
+				if(num == 1){
+					var filetrans1 = $('input[name="filetrans1"]').prop('files')[0];
+				    if(filetrans1 != null || filetrans1 != ''){
+				    	$('#image2').attr("disabled",false);
+				    }
+				}
+				if(num == 2){
+					var filetrans2 = $('input[name="filetrans2"]').prop('files')[0];
+				    if(filetrans1 == null || filetrans1 == '' || filetrans2 != null || filetrans2 != ''){
+				    	$('#image3').attr("disabled",false);
+				    }
+				}
+			}
+		}
+	
+		// 校验图片大小
+	    function checkFileSize(files) {
+			if(files.length < 1 && !updateStatus){
+				layer.open({
+					content : '至少选择1张图片',
+					time : 3000,
+					title : '提示',
+					anim : 1,
+					skin : 'demo-class'
+				});
+				return false;
+			}
+			for (var i = 0; i < files.length; i++){
+				/* if(files[i] == null){
+					layer.open({
+						content : '请选择第'+ (i + 1) +'张图片',
+						time : 3000,
+						title : '提示',
+						anim : 1,
+						skin : 'demo-class'
+					});
+					return false;
+				} */
+				if(files[i] != null && files[i] != ''){
+					var size = files[i].size / 1024;
+			    	if (size > 1024) {
+			    		layer.open({
+							content : '第'+ (i + 1) +'张图片大小不能超过1M',
+							time : 3000,
+							title : '提示',
+							anim : 1,
+							skin : 'demo-class'
+	
+						});
+			    		return false;
+			    	} 
+				}
+			}    	
+	    	return true;
+	    }
+	 	// 获取token
+		function getToken(){
+			$.ajax({
+				headers:{
+				 	"token": token
+				},
+				dataType : 'JSON',
+				url : api + 'auth/getUpToken',
+				type : 'post',
+				data : {
+					version : version,
+				},
+				success : function(res) {
+					if (res.success) {
+						upToken = res.data;
+						if (files.length > 0) {
+							firstKey = getKey(files[0]);
+							for (var j = 0; j < oldPictures.length; j++) {
+								if (oldPictures[j] == true) {
+									oldPictures[j] = firstKey;
+									break;
+								}
+							}
+							proccessStatus = 1;
+							uploadImage(files[0],upToken,firstKey);
+						}
+					} else {
+						layer.open({
+		               		  content: res.message,
+		               		  time: 3000,
+		               		  title:'提示',
+		               		  anim:1,
+		               		  skin:'demo-class'
+		               	});
+						if(res.code == 403){
+							window.location.href = api + "page/403";
+						}
+						if(res.code == 504){
+							top.location.href = api + "page/login";
+						}
+					}
+				}
+			});
+		}
+	 	
+		
+	 	
+		// 上传设置
+		var putExtra = {
+		  fname: "",
+		  params: {},
+		  mimeType:["image/png", "image/jpeg", "image/gif"]
+		};
+		var config = {
+			useCdnDomain: true,
+			region: qiniu.region.z0
+		}
+		// 上传开始
+		function uploadImage(file, token, key) {		
+			if(file != null && file != ''){
+				var observable = qiniu.upload(file, key, token, putExtra, config);
+			    var subscription = observable.subscribe(observer) 
+			}
+		}
+		// 获取key
+	    function getKey(file) {
+			if(file != null && file != ''){
+		    	var dir = "business/";
+				var end = file.name.split('.').splice(-1);
+				var key =  dir + "cegz"+ guid() + "." + end;
+		    	return key;
+			}
+			return;
+	    }
+	    //用于生成uuid
+	    function S4() {
+	        return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+	    }
+	    function guid() {
+	        return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+	    }
+		// 上传回调
+		var observer = {
+			next(res){
+			},
+			error(err){
+			}, 
+			complete(res){
+				if (proccessStatus == 1 && files.length > 1 ) {
+					// 提交第二张图片
+					secondKey = getKey(files[1]);
+					for (var j = 0; j < oldPictures.length; j++) {
+						if (oldPictures[j] == true) {
+							oldPictures[j] = secondKey;
+							break;
+						}
+					}
+					uploadImage(files[1], upToken, secondKey);
+					if (files.length == 2) {
+					 submitStatus = 1;
+					}
+					proccessStatus ++;
+				} else if(proccessStatus == 2 && submitStatus == 0) {
+					// 提交第二张图片
+					threeKey = getKey(files[2]);
+					for (var j = 0; j < oldPictures.length; j++) {
+						if (oldPictures[j] == true) {
+							oldPictures[j] = threeKey;
+							break;
+						}
+					}
+					uploadImage(files[2], upToken, threeKey);
+					if (files.length == 3) {
+					 submitStatus = 1;
+					}
+					proccessStatus ++;
+				} else {
+					// 提交数据
+					submitData();
+				}
+			}
+		}
+		
+		function imageShow(v){
+			var reader = new FileReader();
+			reader.onload = function (evt) {
+				if($(v).parent().children().length == 1){
+					$(v).after('<img style="width: 200px;" src="' + evt.target.result + '" />');
+				}else{
+					$(v).parent().find('img').attr('src',evt.target.result);
+				}
+			}
+			reader.readAsDataURL(v.files[0]);
+		}
+		
+	 </script>
+	<!-- 图片上传 end -->
+</body>
+
+</html>

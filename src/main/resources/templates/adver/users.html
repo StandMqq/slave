@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>用户信息</title>
+	<meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+	<script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+	<link rel="stylesheet" href="../css/font.css">
+	<link rel="stylesheet" href="../css/xadmin.css">
+	<script type="text/javascript" src="../js/xadmin.js"></script>
+	<script src="../lib/layui/layui.js" charset="utf-8"></script>
+	<script src="../js/config/config.js"></script>
+</head>
+
+<body>
+	<div class="x-nav">
+		<span class="layui-breadcrumb"> <a href="main">首页</a> <a
+			href="users"> <cite>用户列表</cite>
+		</a>
+		</span> <a class="layui-btn layui-btn-small"
+			style="line-height: 1.6em; margin-top: 3px; float: right"
+			href="javascript:location.replace(location.href);" title="刷新"> <i
+			class="layui-icon" style="line-height: 30px">ဂ</i></a>
+	</div>
+	<div class="x-body">
+		<span id="top" class="x-right" style="line-height: 40px">共有数据：0条</span>
+		<table class="layui-table">
+			<colgroup>
+				<col width="5%">
+				<col width="20%">
+				<col width="20%">
+				<col width="5%">
+				<col width="50%">
+			</colgroup>
+			<tbody>
+				<tr>
+					<td><button class="layui-btn" id="queryBtn">查&nbsp;询</button></td>
+					<td><input type="text" id="phoneInput" placeholder="请输入手机号"
+						autocomplete="off" class="layui-input"></td>
+					<td><input type="text" id="nameInput" placeholder="请输入姓名"
+						autocomplete="off" class="layui-input"></td>
+					<td>
+						<button id="addUser" class="layui-btn">
+							<i class="layui-icon">&#xe608;</i> 添加
+						</button>
+					</td>
+					<td></td>
+				</tr>
+			</tbody>
+		</table>
+		<div id="content">
+			<table class="layui-table">
+				<thead>
+					<tr>
+						<th>姓名</th>
+						<th>手机</th>
+						<th>时间</th>
+						<th>操作</th>
+				</thead>
+				<tbody id="body">
+
+				</tbody>
+			</table>
+		</div>
+		<div class="page" id="page"></div>
+	</div>
+	<script>
+    	
+       var index = 1;
+       var size = 10;
+       var total = 0;
+       var token = getCookie('token');
+       var name;
+       var phone;
+       function getData(index, size) {
+    	   name = $("#nameInput").val();
+    	   phone = $("#phoneInput").val();
+    	   $.ajax({
+    		   headers:{
+    			   "token": token
+    		   },
+               dataType:'JSON',
+               url:api+'backstageHandleData/getUsersList',
+               type:'post',
+               data:{
+                   version:version,
+                   curPage:index,
+                   pageSize:size,
+                   name:name,
+                   phone:phone
+                   },
+               success: function (res) {
+                   if(res.success==true){
+                		if (res.data == null) {
+                			$("#body").html("");
+                			$("#top").html("共有数据：0条");
+        					layer.msg(res.message);
+                		} else {
+                			$("#top").html("共有数据："+ res.data.totalCount + "条");
+                			var html =""
+                			$.each(res.data.result, function (index, data) {
+                				if(data.name == null){
+                					data.name = ''
+                				}
+                				html += 
+                					"<tr>" + 
+                					"<td>" + data.name + "</td>" + 
+                					"<td>" + data.phone + "</td>" + 
+                					"<td>" + data.createTime + "</td>" + 
+                					"<td>"+ "<button class='layui-btn' onclick='userRoleManage("+data.id+")'>角色管理</button>"
+                					+ "<button class='layui-btn' onclick='disable("+data.id+")'>禁用</button>"
+                					+ "<button class='layui-btn' onclick='users("+data.id+")'>详情</button>";
+	                				if(data.black == false || data.black == null){
+	                					html += "<button class='layui-btn' onclick='setRole("+data.id+",0,\"黑名单\")'>设为黑名单</button>";
+	                				}
+	                				/* if(data.admin == false || data.admin == null){
+	                					html += "<button class='layui-btn' onclick='setRole("+data.id+",3,\"管理员\")'>设为管理员</button>";
+	                				} */
+	                				if(data.passwordSalt == false || data.passwordSalt == null){
+	                					html += "<button class='layui-btn' onclick='setManage("+data.id+","+data.phone+")'>设为管理员</button>";
+	                				}
+                					html += "</td>" + "</tr>"
+                			});
+                			$("#body").html("");
+                			$("#body").html(html);
+                			// 分页条
+                			laypage.render({
+                	    	     elem: 'page', //注意，这里的 test1 是 ID，不用加 # 号
+                	    	     count: res.data.totalCount, //数据总数，从服务端得到
+                	    	     limit: size,
+                	    	     curr:index,
+                	    	     jump: function(obj, first) {
+                	    	    	 if (!first) {
+                	    	    		 getData(obj.curr, obj.limit);
+                	    	    	 }               	    	    	 
+                	    	     }
+                	    	});
+                		}
+                   }else {
+						layer.open({
+							  content: res.message,
+							  time: 3000,
+							  title:'提示',
+							  anim:1,
+							  skin:'demo-class'
+						});
+						if(res.code == 403){
+							window.location.href = api + "page/403";
+						}
+						if(res.code == 504){
+							top.location.href = api + "page/login";
+						}
+                   }
+               },
+               error: function () {
+
+               },
+           })
+       }
+       var laypage;
+       layui.use('laypage', function(){
+    	  laypage = layui.laypage;
+    	   
+    	   //执行一个laypage实例
+    	   
+       });
+       getData(index, size);
+       function users(id){
+    	   location.href = api + "page/insertUsersBlock?id=" + id;
+       }
+       function disable(id){
+    	   layer.confirm('确认禁用？', function(index) {
+				$.ajax({
+					headers:{
+					 	"token": token
+					},
+					dataType : 'JSON',
+					url : api + 'backstageHandleData/deleteUsers',
+					type : 'post',
+					data : {
+						version : version,
+						id : id
+					},
+					success : function(res) {
+						layer.msg(res.message, {
+							icon : 1,
+							time : 1000
+						});
+						if (res.success == true) {
+							setTimeout(function() {
+								window.history.go(0);
+							}, 2000)
+						}else {
+							layer.open({
+			               		  content: res.message,
+			               		  time: 3000,
+			               		  title:'提示',
+			               		  anim:1,
+			               		  skin:'demo-class'
+			               	});
+							if(res.code == 403){
+								window.location.href = api + "page/403";
+							}
+							if(res.code == 504){
+								top.location.href = api + "page/login";
+							}
+						}
+					},
+					error : function() {
+						layer.msg('网络错误', {
+							icon : 5,
+							time : 1500
+						});
+					},
+				})
+			});
+       }
+       function setRole(id, grade, title){
+    	   layer.confirm('确认设置账号为'+title+'？', function(index) {
+				$.ajax({
+					headers:{
+					 	"token": token
+					},
+					dataType : 'JSON',
+					url : api + 'backstageHandleData/setRole',
+					type : 'post',
+					data : {
+						version : version,
+						id : id,
+						grade : grade,
+					},
+					success : function(res) {
+						layer.msg(res.message, {
+							icon : 1,
+							time : 1000
+						});
+						if (res.success == true) {
+							setTimeout(function() {
+								window.history.go(0);
+							}, 2000)
+						}else {
+							layer.open({
+			               		  content: res.message,
+			               		  time: 3000,
+			               		  title:'提示',
+			               		  anim:1,
+			               		  skin:'demo-class'
+			               	});
+							if(res.code == 403){
+								window.location.href = api + "page/403";
+							}
+							if(res.code == 504){
+								top.location.href = api + "page/login";
+							}
+						}
+					},
+					error : function() {
+						layer.msg('网络错误', {
+							icon : 5,
+							time : 1500
+						});
+					},
+				})
+			});
+       }
+      
+       function getCookie(cname)
+       {
+         var name = cname + "=";
+         var ca = document.cookie.split(';');
+         for(var i=0; i<ca.length; i++) 
+         {
+           var c = ca[i].trim();
+           if (c.indexOf(name)==0) return c.substring(name.length,c.length);
+         }
+         return "";
+       }
+       $("#queryBtn").click(function (){
+    	   getData(index, size);
+       })
+       $("#addUser").click(function() {
+    	   location.href = api + "page/insertUsers"
+       })
+       
+		function userRoleManage(id){
+	        if(id){
+	            location.href=api+'page/userRoleManage?userId='+id
+	        }
+	    }
+       
+		function setManage(id,phone){
+	        if(id){
+	            location.href=api+'page/setManage?userId='+id+'&phone='+phone;
+	        }
+	    }
+       </script>
+</body>
+</html>

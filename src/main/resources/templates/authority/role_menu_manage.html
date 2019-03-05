@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>角色菜单管理</title>
+	<meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+	<link rel="stylesheet" href="../css/font.css">
+	<link rel="stylesheet" href="../css/xadmin.css">
+	<script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+	<script type="text/javascript" src="../lib/layui/layui.js" charset="utf-8"></script>
+	<script type="text/javascript" src="../js/xadmin.js"></script>
+	<script type="text/javascript" src="../js/jquery.shCircleLoader.js"></script>
+	<script type="text/javascript" src="../js/config/config.js"></script>
+	<style>
+	.row-cell-class {
+		padding-top: 50px,
+	}
+	#loding{
+		width:100%;
+		height:100%;
+		background-color:#BEBEBE;
+		position:absolute;
+		left:0px;
+		top:0px;
+	}
+	</style>
+</head>
+
+<body>
+	<div class="x-nav">
+		<span class="layui-breadcrumb">
+			<a href="main">首页</a>
+			<a href="roles">角色列表</a>
+			<a href="#"><cite>角色菜单管理</cite></a>
+		</span>
+			<a class="layui-btn layui-btn-small"
+				style="line-height: 1.6em; margin-top: 3px; float: right"
+				href="javascript:location.replace(location.href);" title="刷新"> <i
+				class="layui-icon" style="line-height: 30px">ဂ</i></a>
+	</div>
+	<div class="x-body">
+		<div class="layui-form-item">
+			<label class="layui-form-label" style="width: 100px;">设置关联的菜单</label>
+			<div class="layui-input-block" id="menuId" style="margin-left: 150px;">
+			
+			</div>
+		</div>
+		<br/><br/>
+		<div class="layui-form-item">
+			<label class="layui-form-label"></label>
+			<div class="layui-input-block" style="margin-left: 150px;">
+				<span><font style="color: red;">注意：勾选第二级菜单时，必须勾选第一级菜单 ！！！</font></span>
+			</div>
+		</div>
+		
+		<div class="layui-form-item">
+		    <div class="layui-input-block" style="margin-left: 150px;">
+		      <button id = "sumbit-btn" class="layui-btn" lay-submit lay-filter="*">确定</button>
+		    </div>
+  		</div>
+	</div>
+	
+	<script>
+		var index = 1;
+	    var token = getCookie('token');
+	    var curWwwPath = window.document.location.href;
+        var idParam= curWwwPath.split("?")[1];
+        var id = idParam.split("=")[1];
+	    
+	    getData(id);
+	 	// 获取数据
+		function getData(id) {	
+			$.ajax({
+				headers:{
+				 	"token": token
+				},
+				dataType : 'JSON',
+				url : api + 'auth/getMenuByRoleId',
+				type : 'post',
+				data : {
+					version : version,
+					roleId : id
+				},
+				success : function(res) {
+					if (res.success == true) {
+						var list = res.data.resultList;
+						if(list != null){
+							/* var html = "";
+							$.each(list,
+								function(index, data) {
+									if(data.isSelected == true){
+										html += "<input type='checkbox' name='menu' value='"+data.id+"' checked='checked' />"+data.name + "  ";
+									}else{
+										html += "<input type='checkbox' name='menu' value='"+data.id+"' />"+data.name + "  ";
+									}
+								}
+							)
+							$("#menuId").html(html);
+							
+							list = JSON.parse(list); */
+							/* console.log(list); */
+							list = JSON.parse(list);
+							/* console.log(list); */
+							
+							var html = "";
+							html += "<div style='padding-top: 50px;'>";
+							$.each(list,
+								function(index, data) {
+									if(data.isSelected == true){
+										if(data.url != null){
+											html += "<input type='checkbox' name='menu' value='"+data.id+"' checked='checked' />"+data.name + "_" + data.url + "&emsp;";
+										}else{
+											html += "<input type='checkbox' name='menu' value='"+data.id+"' checked='checked' />"+data.name + "&emsp;";
+										}
+									}else{
+										if(data.url != null){
+											html += "<input type='checkbox' name='menu' value='"+data.id+"' />"+data.name + "_" + data.url + "&emsp;";
+										}else{
+											html += "<input type='checkbox' name='menu' value='"+data.id+"' />"+data.name + "&emsp;";
+										}
+									}
+									html += "<br/>";
+									html += "&emsp;&emsp;&emsp;";
+									$.each(data.childrenMenu,
+										function(index1, data1) {
+											if(data1.isSelected == true){
+												html += "<input type='checkbox' name='menu' value='"+data1.id+"' checked='checked' />"+data1.name + "&emsp;";
+											}else{
+												html += "<input type='checkbox' name='menu' value='"+data1.id+"' />"+data1.name + "&emsp;";
+											}
+										})
+										html += "<br/>";
+									html += "<br/>";
+							})
+							html += "<br/>";
+							html += "<div/>";
+							$("#menuId").html(html);
+						}else{
+							layer.open({
+			               		  content: "数据错误，请刷新后重试",
+			               		  time: 3000,
+			               		  title:'提示',
+			               		  anim:1,
+			               		  skin:'demo-class'
+			               	});
+						}
+					} else {
+						layer.open({
+		               		  content: res.message,
+		               		  time: 3000,
+		               		  title:'提示',
+		               		  anim:1,
+		               		  skin:'demo-class'
+		               	});
+						if(res.code == 403){
+							window.location.href = api + "page/403";
+						}
+						if(res.code == 504){
+							top.location.href = api + "page/login";
+						}
+					}
+				},
+				error : function() {
+					layer.msg('网络错误', {
+						icon : 5,
+						time : 1500
+					});
+				},
+			})
+		}
+	    
+	    function message(text) {
+	    	layer.open({
+				content : text,
+				time : 3000,
+				title : '提示',
+				anim : 1,
+				skin : 'demo-class'
+
+			});
+	    }
+	    
+	    var menus = "";
+	    // 提交数据事件
+		$("#sumbit-btn").click(function(){
+			// 获取checkbox[name='rolecb']的值
+            var arr = new Array();
+            $("input:checkbox[name='menu']:checked").each(function(i){
+                arr[i] = $(this).val();
+            });
+			// 将数组合并成字符串
+            menus = arr.join(",");
+		    submitData();
+		})
+		
+		// 提交数据
+		function submitData() {	
+			$.ajax({
+				headers:{
+				 	"token": token
+				},
+				dataType : 'JSON',
+				url : api + 'auth/setRoleMenus',
+				type : 'post',
+				data : {
+					version : version,
+					menuIds: menus,
+					roleId : id
+				},
+				success : function(res) {
+					if (res.success == true) {
+						layer.msg(res.message, {
+							  time : 0, //不自动关闭
+							  title : '提示',
+							  anim : 1,
+							  skin : 'demo-class',
+							  btn : ['确定'],
+							  yes : function(index){
+							    layer.close(index);
+							    /* window.location.reload(); */
+							    window.history.go(-1);
+							  }
+						});
+					} else {
+						layer.open({
+		               		  content: res.message,
+		               		  time: 3000,
+		               		  title:'提示',
+		               		  anim:1,
+		               		  skin:'demo-class'
+		               	});
+						if(res.code == 403){
+							window.location.href = api + "page/403";
+						}
+						if(res.code == 504){
+							top.location.href = api + "page/login";
+						}
+					}
+
+				},
+				error : function() {
+					$('#loding').hide();
+					layer.msg('网络错误', {
+						icon : 5,
+						time : 1500
+					});
+				},
+
+			})
+		}		
+		function getCookie(cname) {
+			var name = cname + "=";
+			var ca = document.cookie.split(';');
+			for (var i = 0; i < ca.length; i++) {
+				var c = ca[i].trim();
+				if (c.indexOf(name) == 0)
+					return c.substring(name.length, c.length);
+			}
+			return "";
+		}
+	</script>
+
+</body>
+
+</html>

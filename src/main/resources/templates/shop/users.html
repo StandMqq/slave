@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<title>用户信息</title>
+<meta name="renderer" content="webkit">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+<link rel="stylesheet" href="../css/font.css">
+<link rel="stylesheet" href="../css/xadmin.css">
+<script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+<script type="text/javascript" src="../lib/layui/layui.js" charset="utf-8"></script>
+<script type="text/javascript" src="../js/xadmin.js"></script>
+<script type="text/javascript" src="../js/config/config.js"></script>
+
+<!-- 时间组件 -->
+<script>
+	layui.use('laydate', function() {
+		var laydate = layui.laydate;
+		//执行一个laydate实例
+		laydate.render({
+			elem : '#startTime', //指定元素
+			type : 'datetime'
+		});
+		laydate.render({
+			elem : '#endTime', //指定元素
+			type : 'datetime'
+		});
+	});
+</script>
+</head>
+
+<body>
+	<div class="x-nav">
+		<span class="layui-breadcrumb">
+			<a href="main">首页</a>
+			<a href="users"><cite>用户列表</cite></a>
+		</span>
+		<a class="layui-btn layui-btn-small" style="line-height: 1.6em; margin-top: 3px; float: right"
+			href="javascript:location.replace(location.href);" title="刷新"> 
+			<i class="layui-icon" style="line-height: 30px">ဂ</i>
+		</a>
+	</div>
+	<div class="x-body">
+		<span id="top" class="x-right" style="line-height: 40px">共有数据：0条</span>
+		<table class="layui-table">
+			<colgroup>
+				<col width="150">
+				<col width="200">
+				<col>
+			</colgroup>
+			<tbody>
+				<tr>
+					<td><button class="layui-btn" id="queryBtn"><i class="iconfont">&#xe6ac;</i>查&nbsp;询</button></td>
+					<td><input type="text" id="phoneInput" placeholder="请输入手机号" autocomplete="off" class="layui-input"></td>
+
+					<td style="display: flex;"><label class="layui-form-label">登录时间</label>
+						<div class="layui-input-block" style="margin-left: 30px;">
+							<input type="text" id="startTime" name="startTime" placeholder="开始时间" autocomplete="off" class="layui-input">
+						</div>
+						<div class="layui-input-block" style="margin-left: 30px;">
+							<input type="text" id="endTime" name="endTime" placeholder="结束时间" autocomplete="off" class="layui-input">
+						</div>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<div id="content">
+			<table class="layui-table">
+				<thead>
+					<tr>
+						<th>微信名称</th>
+						<th>手机</th>
+						<th>领券数</th>
+						<th>使用数</th>
+						<th>积分</th>
+						<th>上次登录时间</th>
+						<th>操作</th>
+				</thead>
+				<tbody id="listBox">
+
+				</tbody>
+			</table>
+		</div>
+		<div class="page" id="page"></div>
+	</div>
+	<script>
+		var index = 1;
+		var size = 10;
+		var total = 0;
+		var token = getCookie('token');
+		var phone;
+		var startTime;
+		var endTime;
+		function getData(index, size) {
+			phone = $("#phoneInput").val();
+			startTime = $("#startTime").val();
+			endTime = $("#endTime").val();
+			$.ajax({
+				headers:{
+				 	"token": token
+				},
+				dataType : 'JSON',
+				url : api + 'shopUsers/getUsersList',
+				type : 'post',
+				data : {
+					version : version,
+					curPage : index,
+					pageSize : size,
+					phone : phone,
+					startTime : startTime,
+					endTime : endTime
+				},
+				success : function(res) {
+					if (res.success == true) {
+						if (res.data == null) {
+							$("#listBox").html("");
+                			$("#top").html("共有数据：0条");
+        					/* layer.open({
+                       		  content: res.message,
+                       		  time: 3000,
+                       		  title:'提示',
+                       		  anim:1,
+                       		  skin:'demo-class'
+                       		}); */
+        					layer.msg(res.message);
+						} else {
+							$("#top").html("共有数据：" + res.data.totalCount + "条");
+							var html = ""
+							$.each(
+								res.data.resultList,
+								function(index, data) {
+									if (data.wxName == null) {
+										data.wxName = ''
+									}
+									if (data.phone == null) {
+										data.phone = ''
+									}
+									html += "<tr><td>" + data.wxName;/* 微信名称 */
+									html += "</td><td>" + data.phone;
+									html += "</td><td>" + data.pullNum;/* 领券数 */
+									html += "</td><td>" + data.useNum;/* 使用数 */
+									html += "</td><td>" + data.integral;/* 积分 */
+									html += "</td><td>" + data.loginTime;/* 上次登录时间 */
+									html += "</td><td>";
+									html += "<button class='layui-btn' onclick='ticket(" + data.id + ")'>优惠券</button>";
+									html += "<button class='layui-btn' onclick='integral(" + data.id + ")'>积分</button>";
+									html += "</td></tr>";
+							});
+							$("#listBox").html("");
+							$("#listBox").html(html);
+							// 分页条
+							laypage.render({
+								elem : 'page', //注意，这里的 test1 是 ID，不用加 # 号
+								count : res.data.totalCount, //数据总数，从服务端得到
+								limit : size,
+								curr : index,
+								jump : function(obj, first) {
+									if (!first) {
+										getData(obj.curr, obj.limit);
+									}
+								}
+							});
+						}
+					} else {
+						layer.open({
+							content : res.message,
+							time : 3000,
+							title : '提示',
+							anim : 1,
+							skin : 'demo-class'
+						});
+						if(res.code == 403){
+							window.location.href = api + "page/403";
+						}
+						if(res.code == 504){
+							top.location.href = api + "page/login";
+						}
+					}
+				},
+				error : function() {
+					layer.msg('网络错误', {
+						icon : 5,
+						time : 1500
+					});
+				},
+			})
+		}
+		var laypage;
+		layui.use('laypage', function() {
+			laypage = layui.laypage;
+
+			//执行一个laypage实例
+
+		});
+		getData(index, size);
+
+		function getCookie(cname) {
+			var name = cname + "=";
+			var ca = document.cookie.split(';');
+			for (var i = 0; i < ca.length; i++) {
+				var c = ca[i].trim();
+				if (c.indexOf(name) == 0)
+					return c.substring(name.length, c.length);
+			}
+			return "";
+		}
+		$("#queryBtn").click(function() {
+			getData(index, size);
+		})
+		
+		function ticket(id){
+	        if(id){
+	            location.href=api+'page/usersTicketList?id='+id
+	        }
+	    }
+		
+		function integral(id){
+	        if(id){
+	            location.href=api+'page/usersIntegralList?id='+id
+	        }
+	    }
+	</script>
+
+</body>
+
+</html>

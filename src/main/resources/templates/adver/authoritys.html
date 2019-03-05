@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>权限列表</title>
+	<meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+	<link rel="stylesheet" href="../css/font.css">
+	<link rel="stylesheet" href="../css/xadmin.css">
+	<script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+	<script type="text/javascript" src="../lib/layui/layui.js" charset="utf-8"></script>
+	<script type="text/javascript" src="../js/xadmin.js"></script>
+	<script type="text/javascript" src="../js/config/config.js"></script>
+</head>
+
+<body>
+	<div class="x-nav">
+		<span class="layui-breadcrumb"> <a href="main">首页</a> <a
+			href="authoritys"><cite>权限列表</cite> </a>
+		</span> <a class="layui-btn layui-btn-small"
+			style="line-height: 1.6em; margin-top: 3px; float: right"
+			href="javascript:location.replace(location.href);" title="刷新"> <i
+			class="layui-icon" style="line-height: 30px">ဂ</i></a>
+	</div>
+	<div class="x-body">
+		<span id="top" class="x-right" style="line-height: 40px">共有数据：0
+			条</span>
+		<table class="layui-table">
+			<colgroup>
+				<col width="5%">
+				<col width="20%">
+				<col width="20%">
+				<col width="55%">
+			</colgroup>
+			<tbody>
+				<tr>
+					<td><button class="layui-btn" id="queryBtn">查&nbsp;询</button></td>
+					<td><input type="text" id="name" placeholder="请输入名称"
+						autocomplete="off" class="layui-input"></td>
+					<!-- 名单等级 0 黑名单，1 黄名单，2 白名单，3 管理员 -->
+					<td><select id="grade" class="layui-input">
+							<option value="">全部</option>
+							<option value="0">黑名单</option>
+							<option value="1">黄名单</option>
+							<option value="2">白名单</option>
+							<option value="3">管理员</option>
+					</select></td>
+					<td></td>
+				</tr>
+			</tbody>
+		</table>
+		<div id="content">
+			<table class="layui-table">
+				<thead>
+					<tr>
+						<th>名称</th>
+						<th>名单等级</th>
+						<th>数据是否有效</th>
+						<th>时间</th>
+						<th>被操作人</th>
+						<th>操作人</th>
+						<th>操作</th>
+				</thead>
+				<tbody id="body">
+
+				</tbody>
+			</table>
+		</div>
+		<div class="page" id="page"></div>
+	</div>
+	<script>
+		var index = 1;
+		var size = 10;
+		var total = 0;
+		var token = getCookie('token');
+		function getData(index, size) {
+			var name = $("#name").val();
+			var grade = $("#grade").val();
+			$.ajax({
+				headers:{
+				 	"token": token
+				},
+				dataType : 'JSON',
+				url : api + 'backstageQueryData/getAuthorityList',
+				type : 'post',
+				data : {
+					version : version,
+					curPage : index,
+					pageSize : size,
+					name : name,
+					grade : grade
+				},
+				success : function(res) {
+					if (res.success == true) {
+						if (res.data == null) {
+							$("#top").html("共有数据：0条");
+							$("#body").html("");
+							/* layer.open({
+		               		  content: res.message,
+		               		  time: 3000,
+		               		  title:'提示',
+		               		  anim:1,
+		               		  skin:'demo-class'
+		               		}); */
+							layer.msg(res.message);
+						} else {
+							$("#top").html("共有数据：" + res.data.totalCount + "条");
+							var html = ""
+							$.each(
+								res.data.resultList,
+								function(index, data) {
+									if (data.name == null) {
+										data.name = '';
+									}
+									if (data.createTime == null) {
+										data.createTime = '';
+									}
+									if (data.beiOperatorPhone == null) {
+										data.beiOperatorPhone = '';
+									}
+									if (data.operatorPhone == null) {
+										data.operatorPhone = '';
+									}
+									<!-- 名单等级 0 黑名单，1 黄名单，2 白名单，3 管理员 -->
+									if (data.grade != null) {
+										if(data.grade == 0){
+											data.grade = '黑名单';
+										}else if(data.grade == 1){
+											data.grade = '黄名单';
+										}else if(data.grade == 2){
+											data.grade = '白名单';
+										}else if(data.grade == 3){
+											data.grade = '管理员';
+										}
+									}
+									<!-- 是否有效，0 有效，1 无效 -->
+									if (data.isDeleted != null) {
+										if(data.isDeleted == 0){
+											data.isDeleted = '有效';
+										}else if(data.isDeleted == 1){
+											data.isDeleted = '无效';
+										}
+									}
+
+									html += "<tr>" + 
+									"<td>" + data.name + "</td>" + 
+									"<td>" + data.grade + "</td>" + 
+									"<td>" + data.isDeleted + "</td>" + 
+									"<td>" + data.createTime + "</td>" + 
+									"<td>" + data.beiOperatorPhone + "</td>" + 
+									"<td>" + data.operatorPhone + "</td>" + 
+									"<td><button class='layui-btn' onclick='relieve(" + data.id + ")'>解除</button></td>" + 
+									"</tr>";
+
+								});
+							$("#body").html();
+							$("#body").html(html);
+							// 分页条
+							laypage.render({
+								elem : 'page', //注意，这里的 test1 是 ID，不用加 # 号
+								count : res.data.totalCount, //数据总数，从服务端得到
+								limit : size,
+								curr : index,
+								jump : function(obj, first) {
+									if (!first) {
+										getData(obj.curr, obj.limit);
+									}
+								}
+							});
+						}
+					} else {
+						layer.open({
+							content : res.message,
+							time : 3000,
+							title : '提示',
+							anim : 1,
+							skin : 'demo-class'
+						});
+						if(res.code == 403){
+							window.location.href = api + "page/403";
+						}
+						if(res.code == 504){
+							top.location.href = api + "page/login";
+						}
+					}
+				},
+				error : function() {
+					layer.msg('网络错误', {
+						icon : 5,
+						time : 1500
+					});
+				},
+			})
+		}
+		var laypage;
+		layui.use('laypage', function() {
+			laypage = layui.laypage;
+
+			//执行一个laypage实例
+
+		});
+		getData(index, size);
+
+		function relieve(id) {
+			layer.confirm('确认解除？', function(index) {
+				$.ajax({
+					headers:{
+					 	"token": token
+					},
+					dataType : 'JSON',
+					url : api + 'backstageHandleData/relieveAuthority',
+					type : 'post',
+					data : {
+						version : version,
+						id : id
+					},
+					success : function(res) {
+						layer.msg(res.message, {
+							icon : 1,
+							time : 1000
+						});
+						if (res.success == true) {
+							setTimeout(function() {
+								window.history.go(0);
+							}, 2000)
+						}else {
+							layer.open({
+			               		  content: res.message,
+			               		  time: 3000,
+			               		  title:'提示',
+			               		  anim:1,
+			               		  skin:'demo-class'
+			               	});
+							if(res.code == 403){
+								window.location.href = api + "page/403";
+							}
+							if(res.code == 504){
+								top.location.href = api + "page/login";
+							}
+						}
+					},
+					error : function() {
+						layer.msg('网络错误', {
+							icon : 5,
+							time : 1500
+						});
+					},
+				})
+			});
+		}
+
+		function getCookie(cname) {
+			var name = cname + "=";
+			var ca = document.cookie.split(';');
+			for (var i = 0; i < ca.length; i++) {
+				var c = ca[i].trim();
+				if (c.indexOf(name) == 0)
+					return c.substring(name.length, c.length);
+			}
+			return "";
+		}
+		$("#queryBtn").click(function() {
+			getData(index, size);
+		})
+	</script>
+
+</body>
+
+</html>

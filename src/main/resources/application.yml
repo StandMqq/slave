@@ -1,0 +1,65 @@
+spring:
+  datasource:
+    primary: 
+      url: jdbc:mysql://192.168.0.199:3306/cegz_cli?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8&useSSL=false
+      type: com.alibaba.druid.pool.DruidDataSource
+      username: root
+      password: iRX7H^8FA%
+      driver-class-name: com.mysql.jdbc.Driver
+    secondary:
+      url: jdbc:mysql://192.168.0.199:3306/cegz?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8&useSSL=false
+      type: com.alibaba.druid.pool.DruidDataSource
+      username: root
+      password: iRX7H^8FA%
+      driver-class-name: com.mysql.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  data:
+    mongodb:
+      custom:
+        hosts: 192.168.0.199
+        ports: 27017
+#        username: admin
+#        password: szSU2q3jVrux
+        database: cegz
+        authentication-database: admin
+        connections-per-host: 20
+        min-connections-per-host: 20
+  redis:
+    host: 192.168.0.199
+    port: 7379
+    password: 123456
+    timeout: 30000
+server:
+  tomcat:
+    remoteIpHeader: x-forwarded-for
+    protocolHeader: x-forwarded-proto
+    portHeader: X-Forwarded-Port
+    protocolHeaderHttpsValue: https
+  api_url: http://192.168.0.95:8090/cegz-api/
+  sys_url: http://192.168.0.199:8070/cegz-sys/
+  version: 20180810
+  image-url: http://sys.cegzm.com/
+  servlet:
+    context-path: /cegz-sys
+  port: 8070
+oss:
+  access-key: b166Tl26Dgw2x0FklVu7CEKg2DMGSwOa6i7fi-_P
+  secret-key: xDyKW058j0pLSiK1gkuY0XD8UIxDmJTDlnbFYiSA
+  all-bucket: demo
+message:
+  url: http://sapi.253.com/msg/HttpBatchSendSM
+  account: ypkj-001
+  pwd: Ypkj888888
+  status: true
+#apk:
+#  url: http://192.168.0.199:8080/app-release.apk
+#  version: 1.1
+#adver:
+#  total: 18
+installer:
+  phone: 17786019667,15528310572,‭18980908806,18280991158
+accountant: 
+  phone: 18280991158

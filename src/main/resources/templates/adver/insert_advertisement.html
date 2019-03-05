@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>录入广告</title>
+	<meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+	<link rel="stylesheet" href="../css/font.css">
+	<link rel="stylesheet" href="../css/xadmin.css">
+	<script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+	<script type="text/javascript" src="../js/qiniu.min.js"></script>
+	<script type="text/javascript" src="../lib/layui/layui.js" charset="utf-8"></script>
+	<script type="text/javascript" src="../js/xadmin.js"></script>
+	<script type="text/javascript" src="../js/config/config.js"></script>
+	<style>
+	.row-cell-class {
+		padding-top: 50px,
+	}
+	</style>
+</head>
+
+<body>
+	<div class="x-nav">
+		<span class="layui-breadcrumb"> <a href="main">首页</a> <a
+			href="users">用户列表</a> <a id="userInfo">用户信息绑定</a> <a href="#"><cite>录入广告</cite></a>
+		</span> <a class="layui-btn layui-btn-small"
+			style="line-height: 1.6em; margin-top: 3px; float: right"
+			href="javascript:location.replace(location.href);" title="刷新"> <i
+			class="layui-icon" style="line-height: 30px">ဂ</i></a>
+	</div>
+	<div class="x-body">
+		<div class="layui-tab layui-tab-card">
+		  <ul class="layui-tab-title">
+		    <li class="layui-this">网约车图片广告</li>
+		    <li>网约车文字广告</li>
+		    <li>教练车图片广告</li>
+		  </ul>
+		  <div class="layui-tab-content" style="height: 100%;">
+		    <div class="layui-tab-item layui-show">
+		    	 <div class="layui-form-item">
+				    <label class="layui-form-label">套餐</label>
+				    <div class="layui-input-block">
+				      <select id="price1" class="price" >
+				      
+				      </select>
+				    </div>
+				 </div>
+		    	 <div class="layui-form-item">
+				    <label class="layui-form-label">广告标题</label>
+				    <div class="layui-input-block">
+				      <input type="text" id="title"  placeholder="请输入广告标题" autocomplete="off" class="layui-input">
+				    </div>
+				 </div>
+		         <div class="layui-form-item">
+				    <label class="layui-form-label">标题图片</label>
+				    <div class="layui-input-block">
+				      <input type="file" id="titleImage" name ="filetrans" autocomplete="off" class="layui-input">
+				    </div>
+				 </div>
+				 <div id="block1" class="layui-form-item image1-class" hidden>
+				    <label class="layui-form-label">内容图片1</label>
+				    <div class="layui-input-block">
+				      <input type="file" id="image1" name="filetrans1" autocomplete="off" class="layui-input">
+				    </div>
+				 </div>
+				 <div id="block2" class="layui-form-item image1-class" hidden>
+				    <label class="layui-form-label">内容图片2</label>
+				    <div class="layui-input-block">
+				      <input type="file" id="image2"  name="filetrans2" autocomplete="off" class="layui-input">
+				    </div>
+				 </div>
+				 <div id="block3" class="layui-form-item image1-class" hidden>
+				    <label class="layui-form-label">内容图片3</label>
+				    <div class="layui-input-block">
+				      <input type="file" id="image3" name="filetrans3" autocomplete="off" class="layui-input">
+				    </div>
+				 </div>
+				 <div class="layui-form-item">
+				    <label class="layui-form-label">广告logo</label>
+				    <div class="layui-input-block">
+				      <input type="file" id="logoImage" name ="filetrans4" autocomplete="off" class="layui-input">
+				    </div>
+				 </div>
+				 <div class="layui-form-item">
+				    <div class="layui-input-block">
+				      <button id="sumbit-btn1"  class="layui-btn" lay-submit lay-filter="*">立即提交</button>
+				    </div>
+	  			</div>
+		    </div>
+		   <div class="layui-tab-item">
+		    	 <div class="layui-form-item">
+				    <label class="layui-form-label">套餐</label>
+				    <div class="layui-input-block">
+				      <select  id="price2" class="price" >
+				      
+				      </select>
+				    </div>
+				  </div>
+				  <div class="layui-form-item">
+				    <label class="layui-form-label">广告内容</label>
+				    <div class="layui-input-block">
+				      <input type="text" id="content2"  placeholder="请输入广告内容" autocomplete="off" class="layui-input">
+				    </div>
+				 </div>
+				  <div class="layui-form-item">
+				    <div class="layui-input-block">
+				      <button id="sumbit-btn2"  class="layui-btn" lay-submit lay-filter="*">立即提交</button>
+				    </div>
+	  			</div>
+		    </div>
+		    <div class="layui-tab-item">
+		    	 <div class="layui-form-item">
+				    <label class="layui-form-label">套餐</label>
+				    <div class="layui-input-block">
+				      <select id="price3" class="price" >				      
+				      </select>
+				    </div>
+				  </div>
+		    	 <div id="threeBlock1" class="layui-form-item image2-class" hidden>
+				    <label class="layui-form-label">内容图片1</label>
+				    <div class="layui-input-block">
+				      <input type="file" id="threeImage1"  name="threeFiletrans1" autocomplete="off" class="layui-input">
+				    </div>
+				 </div>
+				   <div id="threeBlock2" class="layui-form-item image2-class" hidden>
+				    <label class="layui-form-label">内容图片2</label>
+				    <div class="layui-input-block">
+				      <input type="file" id="threeImage2"  name="threeFiletrans2" autocomplete="off" class="layui-input">
+				    </div>
+				 </div>
+				  <div id="threeBlock3" class="layui-form-item image2-class" hidden>
+				    <label class="layui-form-label">内容图片3</label>
+				    <div class="layui-input-block">
+				      <input type="file" id="threeImage3"  name="threeFiletrans3" autocomplete="off" class="layui-input">
+				    </div>
+				 </div>
+				  <div class="layui-form-item">
+				    <div class="layui-input-block">
+				      <button id="sumbit-btn3"  class="layui-btn" lay-submit lay-filter="*">立即提交</button>
+				    </div>
+	  			</div>
+		    </div>	   
+		  </div>
+			<!-- <ul class="layui-tab-title">
+				<li class="layui-this">网约车图片广告</li>
+				<li>网约车文字广告</li>
+				<li>教练车图片广告</li>
+			</ul>
+			<div class="layui-tab-content" style="height: 100%;">
+				<div class="layui-tab-item layui-show">
+					<div class="layui-form-item">
+						<label class="layui-form-label">套餐</label>
+						<div class="layui-input-block">
+							<select id="price1" class="price">
+
+							</select>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">广告标题</label>
+						<div class="layui-input-block">
+							<input type="text" id="title" placeholder="请输入广告标题"
+								autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">标题图片</label>
+						<div class="layui-input-block">
+							<input type="file" id="titleImage" name="filetrans"
+								autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div id="block1" class="layui-form-item image1-class" hidden>
+						<label class="layui-form-label">内容图片1</label>
+						<div class="layui-input-block">
+							<input type="file" id="image1" name="filetrans1"
+								autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div id="block2" class="layui-form-item image1-class" hidden>
+						<label class="layui-form-label">内容图片2</label>
+						<div class="layui-input-block">
+							<input type="file" id="image2" name="filetrans2"
+								autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div id="block3" class="layui-form-item image1-class" hidden>
+						<label class="layui-form-label">内容图片3</label>
+						<div class="layui-input-block">
+							<input type="file" id="image3" name="filetrans3"
+								autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-input-block">
+							<button id="sumbit-btn1" class="layui-btn" lay-submit
+								lay-filter="*">立即提交</button>
+						</div>
+					</div>
+				</div>
+				<div class="layui-tab-item">
+					<div class="layui-form-item">
+						<label class="layui-form-label">套餐</label>
+						<div class="layui-input-block">
+							<select id="price2" class="price">
+
+							</select>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">广告内容</label>
+						<div class="layui-input-block">
+							<input type="text" id="content2" placeholder="请输入广告内容"
+								autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-input-block">
+							<button id="sumbit-btn2" class="layui-btn" lay-submit
+								lay-filter="*">立即提交</button>
+						</div>
+					</div>
+				</div>
+				<div class="layui-tab-item">
+					<div class="layui-form-item">
+						<label class="layui-form-label">套餐</label>
+						<div class="layui-input-block">
+							<select id="price3" class="price">
+							</select>
+						</div>
+					</div>
+					<div id="threeBlock1" class="layui-form-item image2-class" hidden>
+						<label class="layui-form-label">内容图片1</label>
+						<div class="layui-input-block">
+							<input type="file" id="threeImage1" name="threeFiletrans1"
+								autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div id="threeBlock2" class="layui-form-item image2-class" hidden>
+						<label class="layui-form-label">内容图片2</label>
+						<div class="layui-input-block">
+							<input type="file" id="threeImage2" name="threeFiletrans2"
+								autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div id="threeBlock3" class="layui-form-item image2-class" hidden>
+						<label class="layui-form-label">内容图片3</label>
+						<div class="layui-input-block">
+							<input type="file" id="threeImage3" name="threeFiletrans3"
+								autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-input-block">
+							<button id="sumbit-btn3" class="layui-btn" lay-submit
+								lay-filter="*">立即提交</button>
+						</div>
+					</div>
+				</div>
+			</div> -->
+		</div>
+	</div>
+	<script>
+		var token = getCookie('token');
+		var curWwwPath = window.document.location.href;
+		var idParam = curWwwPath.split("?")[1];
+		var userId = idParam.split("=")[1];
+		var title;
+		var content;
+		var bussinessNo;
+		var status = 0;
+		var proccessStatus = 0;
+		var submitStatus = 0;
+		var upToken;
+		var titleKey;
+		var logoKey;
+		var firstKey;
+		var secondKey;
+		var threeKey;
+		var priceId;
+		var files = [];
+		var logoFiles = [];
+		var logoStatus = 0;
+		var typeId;
+		$("#userInfo").attr("href","insertUsersBlock?id="+ userId);
+		 //用于生成uuid
+	    function S4() {
+	        return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+	    }
+	    function guid() {
+	        return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+	    }
+	    // 获取key
+	    function getKey(file) {
+	    	var dir = "adver/";
+			var end = file.name.split('.').splice(-1);
+			var key =  dir + "cegz"+ guid() + "." + end;
+	    	return key;
+	    }
+	    // 元素使用
+	    layui.use('element', function(){
+		  var element = layui.element;
+		  
+		  //一些事件监听
+		  element.on('tab(eventEle)', function(data){
+		     status = data.index;
+		     files = [];
+		     proccessStatus = 0;
+			 submitStatus = 0;
+			 titleKey = "";
+			 logoKey = "";
+			 firstKey = "";
+			 secondKey = "";
+			 threeKey = "";
+			 priceId = "";
+		  });
+		});
+	    // 校验图片大小
+	    function checkFile(files) {
+			for (var i = 0; i < files.length; i++){
+				if(files[i] == null){
+					layer.open({
+						content : '请选择第'+ (i + 1) +'张图片',
+						time : 3000,
+						title : '提示',
+						anim : 1,
+						skin : 'demo-class'
+					});
+					return false;
+				}
+				var size = files[i].size / 1024;
+		    	if (size > 1024) {
+		    		layer.open({
+						content : '第'+ (i + 1) +'张图片大小不能超过1M',
+						time : 3000,
+						title : '提示',
+						anim : 1,
+						skin : 'demo-class'
+					});
+		    		return false
+		    	} 
+			}    	
+	    	return true
+	    }
+	    // 校验logo图片大小
+	    function checkLogoFile(logoFiles) {
+			for (var i = 0; i < logoFiles.length; i++){
+				if(logoFiles[i] && logoFiles[i] != null && logoFiles[i].size > 0){
+					var size = logoFiles[i].size / 1024;
+			    	if (size > 1024) {
+			    		layer.open({
+							content : '第'+ (i + 1) +'张图片大小不能超过1M',
+							time : 3000,
+							title : '提示',
+							anim : 1,
+							skin : 'demo-class'
+						});
+			    		return false
+			    	} 
+				}
+			}    	
+	    	return true
+	    }
+		// 上传图片
+		// 上传配置
+		var config = {
+			useCdnDomain: true,
+			region: qiniu.region.z0
+		}
+		// 上传回调
+		var observer = {
+			next(res){
+			},
+			error(err){
+			}, 
+			complete(res){
+			  
+			  if (status == 0) {
+				  if (logoFiles[4] && logoStatus == 0) {
+					  // 提交logo图片
+						 logoKey = getKey(logoFiles[4]);
+						 uploadLogoImage(logoFiles[4], upToken, logoKey);						 
+						 logoStatus ++;
+				  } else if (proccessStatus == 1) {
+					 // 提交第一张图片
+					 firstKey = getKey(files[1]);
+					 uploadImage(files[1], upToken, firstKey);
+					 if (files.length == 2) {
+						 submitStatus = 1;
+					 }
+					 proccessStatus ++;
+				  } else if(proccessStatus == 2 && submitStatus == 0) {
+						 // 提交第二张图片
+						 secondKey = getKey(files[2]);
+						 uploadImage(files[2], upToken, secondKey);
+						 if (files.length == 3) {
+							 submitStatus = 1;
+						 }
+						 proccessStatus ++;
+				  } else if (proccessStatus == 3 && submitStatus == 0) {
+					  // 提交第三张图片
+						 threeKey = getKey(files[3]);
+						 uploadImage(files[3], upToken, threeKey);						 
+						 submitStatus = 1;						 
+						 proccessStatus ++;
+				  } else {
+					  // 提交数据
+					  typeId =  $("#price1").children('option:selected').val()
+					  if(typeId == 1 || typeId == 2 || typeId == 3){
+						  submitData(1);
+					  }else{
+						  submitData(typeId);
+					  }
+					  
+				  }
+			  } else if (status == 1) {
+				  
+			  } else if (status == 2) {
+				  if (proccessStatus == 1 && files.length > 1) {
+					 // 提交第一张图片
+					 secondKey = getKey(files[1]);
+					 uploadImage(files[1], upToken, secondKey);
+					 if (files.length == 2) {
+						 submitStatus = 1;
+					 }
+					 proccessStatus ++;
+				  } else if(proccessStatus == 2 && submitStatus == 0) {
+						 // 提交第二张图片
+						 threeKey = getKey(files[2]);
+						 uploadImage(files[2], upToken, threeKey);
+						 if (files.length == 3) {
+							 submitStatus = 1;
+						 }
+						 proccessStatus ++;
+				  } else {
+					  // 提交数据
+					  typeId =  $("#price1").children('option:selected').val()
+					  if(typeId === 1 || typeId === 2 || typeId === 3){
+						  submitData(1);
+					  }else{
+						  submitData(typeId);
+					  }
+				  }
+			  }
+			}
+		}
+		
+		// 网约车图片广告
+		
+		$("#price1").change(function(){
+			var value = $(this).children('option:selected').val();
+			priceId  = value;
+			$(".image1-class").hide();
+			if (value == 1) {
+				$("#block1").show();
+			} else if (value == 2) {
+				$("#block1").show();
+				$("#block2").show();
+			} else if (value == 3) {
+				$("#block1").show();
+				/* $("#block2").show();
+				$("#block3").show(); */
+			} else if (value == 4) {
+				$("#block1").show();
+			}else if (value == 5) {
+				$("#block1").show();
+			}else if (value == 6) {
+				$("#block1").show();
+			}else if (value == 7) {
+				$("#block1").show();
+			}
+		})
+		$("#sumbit-btn1").click(function (){
+		    if (priceId == 1) {
+		    	files[0] =  $('input[name="filetrans"]').prop('files')[0];
+		    	files[1] =  $('input[name="filetrans1"]').prop('files')[0];
+		    } else if (priceId == 2) {
+		    	files[0] =  $('input[name="filetrans"]').prop('files')[0];
+		    	files[1] =  $('input[name="filetrans1"]').prop('files')[0];
+		    	files[2] =  $('input[name="filetrans2"]').prop('files')[0];
+		    } else if (priceId == 3) {
+		    	files[0] =  $('input[name="filetrans"]').prop('files')[0];
+		    	files[1] =  $('input[name="filetrans1"]').prop('files')[0];
+		    	/* files[2] =  $('input[name="filetrans2"]').prop('files')[0];
+		    	files[3] =  $('input[name="filetrans3"]').prop('files')[0]; */
+		    }else if (priceId == 4) {
+		    	files[0] =  $('input[name="filetrans"]').prop('files')[0];
+		    	files[1] =  $('input[name="filetrans1"]').prop('files')[0];
+		    	 /*files[3] =  $('input[name="filetrans3"]').prop('files')[0]; */
+		    }else if (priceId == 5) {
+		    	files[0] =  $('input[name="filetrans"]').prop('files')[0];
+		    	files[1] =  $('input[name="filetrans1"]').prop('files')[0];
+		    	 /*files[3] =  $('input[name="filetrans3"]').prop('files')[0]; */
+		    }else if (priceId == 6) {
+		    	files[0] =  $('input[name="filetrans"]').prop('files')[0];
+		    	files[1] =  $('input[name="filetrans1"]').prop('files')[0];
+		    	 /*files[3] =  $('input[name="filetrans3"]').prop('files')[0]; */
+		    }else if (priceId == 7) {
+		    	files[0] =  $('input[name="filetrans"]').prop('files')[0];
+		    	files[1] =  $('input[name="filetrans1"]').prop('files')[0];
+		    	 /*files[3] =  $('input[name="filetrans3"]').prop('files')[0]; */
+		    } else {
+		    	message("请选择套餐");
+		    	return;
+		    }
+		    logoFiles[4] =  $('input[name="filetrans4"]').prop('files')[0];
+		    
+			title = $("#title").val();
+			if (title == null || title == "") {
+				message("标题不能为空");
+				return;
+			}
+			if (title.length > 10) {
+				layer.msg('标题不超过10字!', {
+					icon : 5,
+					time : 1000
+				});
+				return;
+			}
+			if (!checkFile(files)) {
+				return;
+			};
+			if (!checkLogoFile(logoFiles)) {
+				return;
+			};
+			titleKey = getKey(files[0]);
+			uploadImage(files[0],upToken,titleKey);
+			
+			/* if(logoFiles[4] && logoFiles[4] != null && logoFiles[4].size > 0){
+				logoKey = getKey(logoFiles[4]);	
+				uploadLogoImage(logoFiles[4],upToken,logoKey);
+			} */
+			proccessStatus = 1;
+		})
+		// ====================
+		// 网约车文字广告
+		$("#price2").change(function(){
+			var value = $(this).children('option:selected').val();
+			priceId  = value;
+			
+		})
+		$("#sumbit-btn2").click(function (){
+			content = $("#content2").val();
+			if (content == null || content == "") {
+				message("内容不能为空");
+				return;
+			}
+			submitData(2)
+		})
+				
+		// ==================
+		// 教练车图片广告
+		$("#price3").change(function(){
+			
+			var value = $(this).children('option:selected').val();
+			priceId  = value;
+			$(".image2-class").hide();
+			if (value == 1) {
+				$("#threeBlock1").show();
+			} else if (value == 2) {
+				$("#threeBlock1").show();
+				$("#threeBlock2").show();
+			} else if (value == 3) {
+				$("#threeBlock1").show();
+				$("#threeBlock2").show();
+				$("#threeBlock3").show();
+			}	
+		})
+		$("#sumbit-btn3").click(function (){
+			if (priceId == 1) {
+		    	files[0] =  $('input[name="threeFiletrans1"]').prop('files')[0];
+		    } else if (priceId == 2) {
+		    	files[0] =  $('input[name="threeFiletrans1"]').prop('files')[0];
+		    	files[1] =  $('input[name="threeFiletrans2"]').prop('files')[0];
+		    } else if (priceId == 3) {
+		    	files[0] =  $('input[name="threeFiletrans1"]').prop('files')[0];
+		    	files[1] =  $('input[name="threeFiletrans2"]').prop('files')[0];
+		    	files[2] =  $('input[name="threeFiletrans3"]').prop('files')[0];
+		    } else {
+		    	message("请选择套餐");
+		    }
+			if(!checkFile(files)){
+				return;
+			};	
+			firstKey = getKey(files[0]);	
+			proccessStatus = 1;
+			uploadImage(files[0],upToken,firstKey);
+		})
+		// 上传设置
+		var putExtra = {
+				  fname: "",
+				  params: {},
+				  mimeType:["image/png", "image/jpeg", "image/gif"]
+				};
+		function uploadImage(file, token, key) {			
+			// 上传开始
+			var observable = qiniu.upload(file, key, token, putExtra, config);
+		    var subscription = observable.subscribe(observer) 
+		}	
+		function uploadLogoImage(file, token, key) {			
+			// 上传logo开始
+			var observable = qiniu.upload(file, key, token, putExtra, config);
+		    var subscription = observable.subscribe(observer) 
+		}	
+		
+		function getPrice() {
+			$.ajax({
+				headers:{
+				 	"token": token
+				},
+				dataType : 'JSON',
+				url : api + 'advertisement/listPrice',
+				type : 'post',
+				data : {
+					version : version,
+				},
+				success : function(res) {
+					if (res.success){
+						$(".price").empty();
+						$(".price").append("<option value = ''>请选择套餐</option>")
+						$.each(res.data, function(index, cur){
+							if (cur.id == 3) {
+								$(".price").append("<option value = '"+ cur.id+"'>"+ cur.priceName+"（此套餐无广告费，公益广告专用）</option>")
+							} else {
+								$(".price").append("<option value = '"+ cur.id+"'>"+ cur.priceName+"</option>")
+							}
+						})
+					}else {
+						layer.open({                                                                                                                                                      
+		               		  content: res.message,
+		               		  time: 3000,
+		               		  title:'提示',
+		               		  anim:1,
+		               		  skin:'demo-class'
+		               	});
+						if(res.code == 403){
+							window.location.href = api + "page/403";
+						}
+						if(res.code == 504){
+							top.location.href = api + "page/login";
+						}
+					}
+				}
+			});
+		}
+		
+	    // 获取token
+		function getToken(){
+			$.ajax({
+				headers:{
+				 	"token": token
+				},
+				dataType : 'JSON',
+				url : api + 'auth/getUpToken',
+				type : 'post',
+				data : {
+					version : version,
+				},
+				success : function(res) {
+					if (res.success) {
+						upToken = res.data;
+					}else {
+						layer.open({
+		               		  content: res.message,
+		               		  time: 3000,
+		               		  title:'提示',
+		               		  anim:1,
+		               		  skin:'demo-class'
+		               	});
+						if(res.code == 403){
+							window.location.href = api + "page/403";
+						}
+						if(res.code == 504){
+							top.location.href = api + "page/login";
+						}
+					}
+				}
+			});
+		}
+	    function message(text) {
+	    	layer.open({
+				content : text,
+				time : 3000,
+				title : '提示',
+				anim : 1,
+				skin : 'demo-class'
+
+			});
+	    }
+	    function check() {
+			if (uploadStatus == 0) {
+				layer.open({
+					content : '请先上传图片',
+					time : 3000,
+					title : '提示',
+					anim : 1,
+					skin : 'demo-class'
+
+				});
+				return false;
+			}
+			return true;
+	    }
+	    // 提交数据事件
+		/* $("#sumbit-btn").click(function(){
+			email = $("#email").val();
+			name = $("#name").val();
+			phone = $("#phone").val();
+			businessNo = $("#businessNo").val();
+			address = $("#address").val();
+			addressDetail = $("#addressDetail").val();
+		    company = $("#company").val();
+		    city = $("#city").val();
+		    if (email == "") {
+		    	message("邮箱不能为空");return;
+		    }
+		    if (name == "") {
+		    	message("姓名不能为空");return;
+		    }
+		    if (phone == "") {
+		    	message("电话不能为空");return;
+		    }
+		    if (businessNo == "") {
+		    	message("执照编号不能为空");return;
+		    }
+		    if (address == "") {
+		    	message("区域地址不能为空");return;
+		    }
+		    if (addressDetail == "") {
+		    	message("详细地址不能为空");return;
+		    }
+		    if (company == "") {
+		    	message("公司名称不能为空");return;
+		    }
+		    if (city == "") {
+		    	message("城市不能为空");return;
+		    }
+			getToken();
+		})	 */
+		
+		
+		// 提交数据
+		function submitData(type) {
+			var contentPic
+	    	if (priceId == 1) {
+	    		contentPic = firstKey;
+	    	} else if (priceId == 2) {
+	    		contentPic = firstKey + "," + secondKey;
+	    	} else if (priceId == 3) {
+	    		//contentPic = firstKey + "," + secondKey + "," + threeKey;
+	    		contentPic = firstKey;
+	    	} else if (priceId == 4) {
+	    		//contentPic = firstKey + "," + secondKey + "," + threeKey;
+	    		contentPic = firstKey;
+	    	}else if (priceId == 5) {
+	    		//contentPic = firstKey + "," + secondKey + "," + threeKey;
+	    		contentPic = firstKey;
+	    	}else if (priceId == 6) {
+	    		//contentPic = firstKey + "," + secondKey + "," + threeKey;
+	    		contentPic = firstKey;
+	    	}else if (priceId == 7) {
+	    		//contentPic = firstKey + "," + secondKey + "," + threeKey;
+	    		contentPic = firstKey;
+	    	} 
+			 
+			$.ajax({
+				headers:{
+				 	"token": token
+				},
+				dataType : 'JSON',
+				url : api + 'backstageHandleData/insertAdvertisement',
+				type : 'post',
+				data : {
+					userId :userId,
+					version : version,
+					title : title,
+					titlePicUrl : titleKey,
+					iconUrl : logoKey,
+					content : content,
+					contentPicUrl : contentPic,
+					advertisementTypeId : type,	
+					priceId : priceId
+				},
+				success : function(res) {
+					if (res.success == true) {
+						layer.msg(res.message, {
+							  time : 0, //不自动关闭
+							  title : '提示',
+							  anim : 1,
+							  skin : 'demo-class',
+							  btn : ['确定'],
+							  yes : function(index){
+							    layer.close(index);
+							    window.location.reload();
+							  }
+							});
+						//window.location.href = api + "page/carList" 
+					} else {
+						layer.open({
+							content : res.message,
+							time : 3000,
+							title : '提示',
+							anim : 1,
+							skin : 'demo-class'
+						});
+						if(res.code == 403){
+							window.location.href = api + "page/403";
+						}
+						if(res.code == 504){
+							top.location.href = api + "page/login";
+						}
+					}
+
+				},
+				error : function() {
+					layer.msg('网络错误', {
+						icon : 5,
+						time : 1500
+					});
+				},
+
+			})
+		}
+		
+		function getCookie(cname) {
+			var name = cname + "=";
+			var ca = document.cookie.split(';');
+			for (var i = 0; i < ca.length; i++) {
+				var c = ca[i].trim();
+				if (c.indexOf(name) == 0)
+					return c.substring(name.length, c.length);
+			}
+			return "";
+		}
+		
+		// 获取套餐
+		getPrice();
+		// 获取uptoken
+		getToken();
+	</script>
+</body>
+
+</html>
